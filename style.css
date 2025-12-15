@@ -330,6 +330,7 @@ button {
     margin-bottom: 1.5rem;
     line-height: 1.2;
     animation: fadeInUp 0.8s ease;
+    text-align: center;
 }
 
 .hero-subtitle {
