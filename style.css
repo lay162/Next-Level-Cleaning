@@ -431,6 +431,7 @@ button {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: var(--text-dark);
+    text-align: center;
 }
 
 .service-card > p {
