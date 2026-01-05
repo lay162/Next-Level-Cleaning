@@ -1,0 +1,14 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Netlify Forms Configuration
+# Form submissions will be sent to the email configured in Netlify dashboard
+# Go to: Site settings > Forms > Form notifications
+# Add notification: Email to quotes@yourdomain.com
+
+

@@ -866,6 +866,52 @@ button {
 .footer-section p {
     color: rgba(255, 255, 255, 0.8);
     line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.social-icons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: var(--transition);
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.social-icon:hover,
+.social-icon:focus {
+    color: var(--bg-white);
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.social-icon:active {
+    transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.social-icon svg {
+    width: 22px;
+    height: 22px;
+    display: block;
 }
 
 .footer-section ul {
@@ -1048,6 +1094,23 @@ button {
         grid-template-columns: 1fr;
     }
 
+    .social-icons {
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .social-icon {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    .social-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
     .footer-bottom {
         flex-direction: column;
         text-align: center;
@@ -1059,6 +1122,23 @@ button {
         width: 50px;
         height: 50px;
         min-width: 50px;
+    }
+
+    .social-icons {
+        justify-content: center;
+        gap: 0.875rem;
+    }
+
+    .social-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .social-icon svg {
+        width: 22px;
+        height: 22px;
     }
 
     .hero-symbol {

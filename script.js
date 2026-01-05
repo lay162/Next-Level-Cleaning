@@ -67,12 +67,22 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ============================================
-// Form Handling
+// Form Handling with EmailJS
 // ============================================
+// Initialize EmailJS (you'll need to add your public key)
+// Get your keys from: https://www.emailjs.com/
+// Service ID, Template ID, and Public Key will be needed
+
 const quoteForm = document.getElementById('quote-form');
 
 if (quoteForm) {
-    quoteForm.addEventListener('submit', function(e) {
+    // Initialize EmailJS when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // EmailJS will be initialized with your public key
+        // emailjs.init("YOUR_PUBLIC_KEY"); // Add this after getting your EmailJS account set up
+    });
+
+    quoteForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         // Get form data
@@ -87,24 +97,72 @@ if (quoteForm) {
             return;
         }
 
-        // Prepare email content
-        const emailSubject = encodeURIComponent('New Quote Request from Website');
-        const emailBody = formatEmailBody(formObject);
-        const emailTo = 'info@nextlevelcleaning.co.uk'; // Update with actual email
-        
-        // Create mailto link
-        const mailtoLink = `mailto:${emailTo}?subject=${emailSubject}&body=${encodeURIComponent(emailBody)}`;
-        
-        // Open email client
-        window.location.href = mailtoLink;
-        
-        // Show success message
-        showFormMessage('Thank you! Your quote request has been prepared. Please send the email that opens.', 'success');
-        
-        // Reset form after a delay
-        setTimeout(() => {
-            quoteForm.reset();
-        }, 2000);
+        // Show loading state
+        const submitButton = quoteForm.querySelector('.btn-submit');
+        const originalButtonText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+
+        try {
+            // Prepare email template parameters
+            const templateParams = {
+                to_email: 'quotes@nextlevelcleaning.co.uk', // Your Zoho quotes@ email
+                from_name: formObject.name,
+                from_email: formObject.email,
+                phone: formObject.phone,
+                location: formObject.location,
+                service_type: formObject['service-type'],
+                property_type: formObject['property-type'] || 'Not specified',
+                frequency: formObject.frequency || 'Not specified',
+                message: formObject.message || 'No additional details provided',
+                subject: `New Quote Request - ${formObject['service-type']} - ${formObject.location}`,
+                date: new Date().toLocaleString('en-GB')
+            };
+
+            // Option 1: Using EmailJS (requires setup - see instructions below)
+            // Uncomment and configure after setting up EmailJS account:
+            /*
+            await emailjs.send(
+                'YOUR_SERVICE_ID',    // EmailJS Service ID
+                'YOUR_TEMPLATE_ID',   // EmailJS Template ID
+                templateParams,
+                'YOUR_PUBLIC_KEY'     // EmailJS Public Key
+            );
+            */
+
+            // Option 2: Using Netlify Forms (current setup)
+            // Submit to Netlify Forms
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString()
+            });
+
+            if (response.ok) {
+                // Show success message
+                showFormMessage('Thank you for your quote request! We\'ll be in contact with you soon with your quotation.', 'success');
+                
+                // Reset form
+                quoteForm.reset();
+                
+                // Scroll to success message
+                setTimeout(() => {
+                    const messageEl = document.querySelector('.form-message-success');
+                    if (messageEl) {
+                        messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            } else {
+                throw new Error('Form submission failed');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            showFormMessage('Sorry, there was an error submitting your request. Please try again or contact us directly at quotes@nextlevelcleaning.co.uk', 'error');
+        } finally {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        }
     });
 }
 
