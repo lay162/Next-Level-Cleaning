@@ -72,8 +72,15 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 const quoteForm = document.getElementById('quote-form');
 
 if (quoteForm) {
+    let isSubmitting = false; // Prevent duplicate submissions
+    
     quoteForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        
+        // Prevent duplicate submissions
+        if (isSubmitting) {
+            return;
+        }
         
         // Get form data
         const formData = new FormData(quoteForm);
@@ -82,7 +89,7 @@ if (quoteForm) {
             formObject[key] = value;
         });
 
-        // Validate form
+        // Validate form - return early if invalid, don't block Netlify
         if (!validateForm(formObject)) {
             return;
         }
@@ -92,13 +99,24 @@ if (quoteForm) {
         const originalButtonText = submitButton.textContent;
         submitButton.disabled = true;
         submitButton.textContent = 'Submitting...';
+        isSubmitting = true;
 
         try {
-            // Submit to Netlify Forms
+            // Prepare form data for Netlify Forms (must include form-name)
+            const encodedData = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                encodedData.append(key, value);
+            }
+            // Explicitly ensure form-name is included (required for Netlify Forms)
+            if (!encodedData.has('form-name')) {
+                encodedData.set('form-name', 'quote-request');
+            }
+            
+            // Submit to Netlify Forms via AJAX
             const response = await fetch('/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(formData).toString()
+                body: encodedData.toString()
             });
 
             if (response.ok) {
@@ -125,6 +143,7 @@ if (quoteForm) {
             // Reset button state
             submitButton.disabled = false;
             submitButton.textContent = originalButtonText;
+            isSubmitting = false;
         }
     });
 }
