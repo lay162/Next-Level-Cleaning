@@ -11,4 +11,13 @@
 # Go to: Site settings > Forms > Form notifications
 # Add notification: Email to quotes@yourdomain.com
 
+# Serverless Functions Configuration
+# Functions are located in .netlify/functions/
+# 
+# Auto-reply email function:
+# - Function: send-quote-autoreply
+# - Triggered via form notification webhook
+# - Requires BREVO_API_KEY environment variable
+# - Uses Brevo template ID 2
+
 
