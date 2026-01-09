@@ -113,7 +113,7 @@ if (quoteForm) {
             }
             
             // Submit to Netlify Forms via AJAX
-            const response = await fetch('/', {
+            const response = await fetch('/.netlify/forms', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: encodedData.toString()
