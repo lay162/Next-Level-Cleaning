@@ -126,8 +126,12 @@ function generateQRCode() {
     // Clear existing QR code
     qrContainer.innerHTML = '';
     
+    // Create canvas element
+    const canvas = document.createElement('canvas');
+    qrContainer.appendChild(canvas);
+    
     // Generate QR code
-    QRCode.toCanvas(qrContainer, currentUrl, {
+    QRCode.toCanvas(canvas, currentUrl, {
         width: 256,
         margin: 2,
         color: {
