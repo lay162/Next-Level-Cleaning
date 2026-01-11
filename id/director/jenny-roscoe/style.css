@@ -76,10 +76,11 @@ header {
 main {
     background-color: #f9fafb;
     margin-top: 5rem;
-    padding: 0;
-    max-width: 480px;
     margin-left: auto;
     margin-right: auto;
+    padding: 0;
+    max-width: 480px;
+    width: 90%;
     background: white;
     border-radius: 12px;
     padding-bottom: 1rem;
