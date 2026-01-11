@@ -1,0 +1,262 @@
+/* Digital Business Card Styles - Template */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #333;
+}
+
+.vcard-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.vcard {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.vcard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Company Logo */
+.logo-container {
+    margin-bottom: 20px;
+}
+
+.company-logo {
+    max-width: 120px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Company Name */
+.company-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+}
+
+/* Profile Photo */
+.profile-photo-container {
+    margin: 0 auto 24px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #f5f5f5;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Personal Info */
+.personal-info {
+    margin-bottom: 24px;
+}
+
+.person-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.person-role {
+    font-size: 16px;
+    color: #666;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* QR Code */
+.qr-container {
+    margin: 24px auto;
+    padding: 16px;
+    background: #f8f8f8;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.qr-code {
+    display: block;
+    max-width: 200px;
+    height: auto;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 32px 0 24px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn svg {
+    flex-shrink: 0;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-call {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-whatsapp {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+}
+
+.btn-email {
+    background: linear-gradient(135deg, #EA4335 0%, #C5221F 100%);
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #34A853 0%, #0F9D58 100%);
+}
+
+.btn-share {
+    background: linear-gradient(135deg, #4285F4 0%, #1A73E8 100%);
+}
+
+/* Social Links */
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.social-links a {
+    color: #666;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f5f5f5;
+}
+
+.social-links a:hover {
+    color: #667eea;
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+    
+    .vcard {
+        padding: 24px 20px;
+        border-radius: 20px;
+    }
+    
+    .person-name {
+        font-size: 24px;
+    }
+    
+    .person-role {
+        font-size: 14px;
+    }
+    
+    .profile-photo-container {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+    
+    .qr-code {
+        max-width: 180px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: #fff;
+        padding: 0;
+    }
+    
+    .vcard {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .btn, .social-links {
+        display: none;
+    }
+}
+
