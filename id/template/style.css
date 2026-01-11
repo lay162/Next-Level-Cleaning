@@ -256,10 +256,11 @@ footer.text {
     padding: 1.5rem 0;
     color: #000;
     margin-top: 2rem;
+    background-color: #f9fafb;
 }
 
 footer.text a {
-    color: #37367f;
+    color: #000;
     text-decoration: underline;
 }
 

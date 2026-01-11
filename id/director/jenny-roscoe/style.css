@@ -256,10 +256,11 @@ footer.text {
     padding: 1.5rem 0;
     color: #000;
     margin-top: 2rem;
+    background-color: #f9fafb;
 }
 
 footer.text a {
-    color: #37367f;
+    color: #000;
     text-decoration: underline;
 }
 
@@ -403,13 +404,16 @@ footer.text a {
         padding: 0.875rem 1.25rem;
     }
 
-    banner {
+    header {
         padding: 0.75rem;
     }
 
-    banner img {
+    #topActions a {
         width: 40px;
         height: 40px;
-        padding: 10px;
+    }
+
+    .headerImgC img {
+        max-width: 80px;
     }
 }
