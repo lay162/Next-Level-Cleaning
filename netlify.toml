@@ -1,4 +1,7 @@
+# Static site - no build command needed
+# Netlify will deploy files directly without using build minutes
 [build]
+  command = ""
   publish = "."
 
 [[redirects]]
