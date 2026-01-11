@@ -1,76 +1,134 @@
-// SmartVCard-Style Digital Business Card - Template Script
+// Modal system
+let m = document.getElementById("modal");
+let c = document.getElementById("close");
 
-// ============================================
-// Modal System
-// ============================================
-
-const modal = document.getElementById('modal');
-const modalBackdrop = document.getElementById('modal-backdrop');
-const modalClose = document.getElementById('modal-close');
-const qrView = document.getElementById('qr-view');
-const shareView = document.getElementById('share-view');
-const shareBtn = document.getElementById('share-btn');
-const qrBtn = document.getElementById('qr-btn');
-const copyUrlBtn = document.getElementById('copy-url-btn');
-const shareUrlInput = document.getElementById('share-url-input');
-const copySuccess = document.getElementById('copy-success');
-
-// Show modal
 function showModal(view) {
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    if (!m) return;
     
     if (view === 'qr') {
-        qrView.style.display = 'block';
-        shareView.style.display = 'none';
+        document.getElementById('copyView').style.display = 'none';
+        document.getElementById('qrView').style.display = 'block';
         generateQRCode();
     } else if (view === 'share') {
-        qrView.style.display = 'none';
-        shareView.style.display = 'block';
-        shareUrlInput.value = window.location.href;
-        copySuccess.style.display = 'none';
+        document.getElementById('copyView').style.display = 'block';
+        document.getElementById('qrView').style.display = 'none';
     }
+    
+    m.style.visibility = 'visible';
+    m.style.opacity = '1';
+    document.body.style.overflow = 'hidden';
 }
 
-// Hide modal
 function hideModal() {
-    modal.classList.remove('active');
+    if (!m) return;
+    m.style.visibility = 'hidden';
+    m.style.opacity = '0';
     document.body.style.overflow = '';
 }
 
-// Modal event listeners
-if (modalClose) {
-    modalClose.addEventListener('click', hideModal);
+if (c) {
+    c.addEventListener('click', function(e) {
+        e.preventDefault();
+        hideModal();
+    });
 }
 
-if (modalBackdrop) {
-    modalBackdrop.addEventListener('click', hideModal);
+if (m) {
+    m.addEventListener('click', function(e) {
+        if (e.target === m) {
+            hideModal();
+        }
+    });
 }
 
-// Close modal on Escape key
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
+    if (e.key === 'Escape' && m && m.style.visibility === 'visible') {
         hideModal();
     }
 });
 
-// ============================================
-// QR Code Generation
-// ============================================
+// Banner controls
+let pC = document.querySelectorAll(".pCtrl");
+let pP = null;
 
+pC.forEach(function(ctrl) {
+    ctrl.addEventListener('click', function() {
+        if (this.id === 'shareBtn') {
+            handleShare();
+        } else if (this.id === 'qrBtn') {
+            showModal('qr');
+        }
+    });
+});
+
+// Share functionality
+async function handleShare() {
+    const currentUrl = window.location.href;
+    const name = document.querySelector('.name.text')?.textContent.trim() || 'Contact';
+    const shareData = {
+        title: name + ' - Next Level Cleaning Ltd',
+        text: 'Connect with ' + name + ' from Next Level Cleaning Ltd',
+        url: currentUrl
+    };
+    
+    try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            showModal('share');
+        }
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            showModal('share');
+        }
+    }
+}
+
+// Copy URL functionality
+let copyBtn = document.getElementById("copyURL");
+if (copyBtn) {
+    copyBtn.addEventListener('click', async function() {
+        const url = window.location.href;
+        
+        try {
+            await navigator.clipboard.writeText(url);
+            this.innerHTML = '<div class="icon action"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><span class="action">Copied!</span>';
+            
+            setTimeout(() => {
+                this.innerHTML = '<div class="icon action"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div><span class="action">Copy URL</span>';
+            }, 2000);
+        } catch (error) {
+            console.error('Clipboard error:', error);
+            // Fallback
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            
+            this.innerHTML = '<div class="icon action"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><span class="action">Copied!</span>';
+            
+            setTimeout(() => {
+                this.innerHTML = '<div class="icon action"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div><span class="action">Copy URL</span>';
+            }, 2000);
+        }
+    });
+}
+
+// QR Code generation
 function generateQRCode() {
-    const qrCanvas = document.getElementById('qr-code');
-    if (!qrCanvas) return;
+    const qrContainer = document.getElementById('qr');
+    if (!qrContainer) return;
     
     const currentUrl = window.location.href;
     
     // Clear existing QR code
-    qrCanvas.width = 0;
-    qrCanvas.height = 0;
+    qrContainer.innerHTML = '';
     
     // Generate QR code
-    QRCode.toCanvas(qrCanvas, currentUrl, {
-        width: 280,
+    QRCode.toCanvas(qrContainer, currentUrl, {
+        width: 256,
         margin: 2,
         color: {
             dark: '#000000',
@@ -84,146 +142,17 @@ function generateQRCode() {
     });
 }
 
-// QR button event listener
-if (qrBtn) {
-    qrBtn.addEventListener('click', function() {
-        showModal('qr');
-    });
-}
-
-// ============================================
-// Share System
-// ============================================
-
-async function handleShare() {
-    const currentUrl = window.location.href;
-    const personName = document.querySelector('.profile-name')?.textContent || 'Contact';
-    const shareData = {
-        title: personName + ' - Next Level Cleaning Ltd',
-        text: 'Connect with ' + personName + ' from Next Level Cleaning Ltd',
-        url: currentUrl
-    };
-    
-    try {
-        // Try native Web Share API
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-        } else {
-            // Fallback to modal
-            showModal('share');
-        }
-    } catch (error) {
-        // User cancelled or error - show modal fallback
-        if (error.name !== 'AbortError') {
-            showModal('share');
-        }
-    }
-}
-
-// Share button event listener
-if (shareBtn) {
-    shareBtn.addEventListener('click', handleShare);
-}
-
-// Copy URL functionality
-if (copyUrlBtn) {
-    copyUrlBtn.addEventListener('click', async function() {
-        const url = shareUrlInput.value;
-        
-        try {
-            await navigator.clipboard.writeText(url);
-            copySuccess.style.display = 'block';
-            
-            // Hide success message after 3 seconds
-            setTimeout(function() {
-                copySuccess.style.display = 'none';
-            }, 3000);
-        } catch (error) {
-            console.error('Clipboard error:', error);
-            // Fallback: select text
-            shareUrlInput.select();
-            shareUrlInput.setSelectionRange(0, 99999);
-            alert('URL selected. Press Ctrl+C to copy.');
-        }
-    });
-}
-
-// ============================================
-// Save Contact (VCF Download)
-// ============================================
-
-const saveContactBtn = document.getElementById('save-contact-btn');
-
-if (saveContactBtn) {
-    saveContactBtn.addEventListener('click', function() {
-        // Fetch the contact.vcf file
-        fetch('contact.vcf')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch contact file');
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                // Create download link
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'contact.vcf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Error downloading contact:', error);
-                alert('Error downloading contact. Please try again.');
-            });
-    });
-}
-
-// ============================================
-// Attachments Engine
-// ============================================
-
-const attachmentsSection = document.getElementById('attachments-section');
-
-// Attachments engine is ready for future content
-// This structure allows adding:
-// - Image blocks
-// - Embedded videos (Vimeo, YouTube, MP4)
-// - Image carousels / sliders
-// - Promotional panels
-// - External links
-// - Downloadable files
-
-// Example function to add content blocks (for future use)
-function addAttachmentBlock(type, data) {
-    if (!attachmentsSection) return;
-    
-    const block = document.createElement('div');
-    block.className = `attachment-block attachment-${type}`;
-    
-    // Implementation would go here based on type
-    // For now, this is just the structure
-    
-    attachmentsSection.appendChild(block);
-    return block;
-}
-
-// Initialize attachments section (ready for future content)
-if (attachmentsSection) {
-    // Attachments section is ready
-    // Content can be added dynamically or via HTML
-}
-
-// ============================================
-// Initialize on DOM Load
-// ============================================
-
+// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', function() {
-    // All initialization is done via event listeners above
-    // This ensures everything is ready when DOM is loaded
-    console.log('Digital Business Card initialized');
+    // Set initial modal state
+    if (m) {
+        m.style.visibility = 'hidden';
+        m.style.opacity = '0';
+    }
+    
+    // Hide copyView by default
+    const copyView = document.getElementById('copyView');
+    if (copyView) {
+        copyView.style.display = 'none';
+    }
 });
-

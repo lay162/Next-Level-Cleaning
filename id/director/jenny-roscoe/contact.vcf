@@ -1,11 +1,11 @@
 BEGIN:VCARD
 VERSION:3.0
-N:Roscoe;Jenny;;;
-FN:Jenny Roscoe
+N:TEMPLATE;NAME;;;
+FN:TEMPLATE NAME
 ORG:Next Level Cleaning Ltd
-TITLE:Director
-TEL;TYPE=CELL:+447700900002
-EMAIL:jenny@nextlevelcleaningltd.co.uk
-URL:https://nextlevelcleaningltd.co.uk/id/director/jenny-roscoe
-UID:nextlevel-jenny-roscoe
+TITLE:TEMPLATE ROLE
+TEL;TYPE=CELL:+447700900000
+EMAIL:template@nextlevelcleaningltd.co.uk
+URL:https://nextlevelcleaningltd.co.uk/id/template/
+UID:nextlevel-template
 END:VCARD
