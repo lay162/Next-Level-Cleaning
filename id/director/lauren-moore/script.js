@@ -47,19 +47,23 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Banner controls
-let pC = document.querySelectorAll(".pCtrl");
-let pP = null;
+// Header controls
+let s = document.getElementById("share");
+let sqr = document.getElementById("showQR");
 
-pC.forEach(function(ctrl) {
-    ctrl.addEventListener('click', function() {
-        if (this.id === 'shareBtn') {
-            handleShare();
-        } else if (this.id === 'qrBtn') {
-            showModal('qr');
-        }
+if (s) {
+    s.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleShare();
     });
-});
+}
+
+if (sqr) {
+    sqr.addEventListener('click', function(e) {
+        e.preventDefault();
+        showModal('qr');
+    });
+}
 
 // Share functionality
 async function handleShare() {
