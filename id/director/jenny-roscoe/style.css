@@ -184,6 +184,13 @@ main {
     margin-top: 1rem;
 }
 
+.actions:not(.secondary) .actionsC {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 240px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .actionBtn {
     display: flex;
     flex-direction: column;
@@ -412,6 +419,11 @@ footer.text a {
     .actionsC {
         grid-template-columns: repeat(4, 1fr);
         gap: 0.5rem;
+    }
+
+    .actions:not(.secondary) .actionsC {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 200px;
     }
 
     .actionBtn > a {
