@@ -134,7 +134,7 @@ async function loadStaffData() {
                 email: "lauren@nextlevelcleaningltd.co.uk",
                 phone: "+447700900001",
                 website: "https://nextlevelcleaningltd.co.uk",
-                profileImage: "profile.jpg",
+                profileImage: "/assets/staff-profile-pics/lauren-profile-pic.jpeg",
                 contactVcf: "contact.vcf",
                 qrImage: "/assets/qr-codes/Laurens-QR-code-.png",
                 theme: "pink",
