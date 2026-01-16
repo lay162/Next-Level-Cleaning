@@ -1,0 +1,16 @@
+{
+  "name": "Next Level Cleaning Digital ID",
+  "short_name": "Next Level ID",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#db2777",
+  "icons": [
+    {
+      "src": "/assets/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
