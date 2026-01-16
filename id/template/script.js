@@ -773,377 +773,64 @@ if (copyBtn) {
     });
 }
 
-// QR Code generation - generates unique QR for each employee card
+// QR Code display - loads pre-generated branded QR code images
 function generateQR() {
-    console.log('🔵 generateQR() called');
+    console.log('🔵 generateQR() called - loading static QR image');
     const qrContainer = document.getElementById('qr');
     if (!qrContainer) {
         console.error('QR container not found - #qr element missing');
         return;
     }
     
-    // Clear existing QR code completely
+    // Clear existing content
     qrContainer.innerHTML = '';
     
-    // Wait for QRCode library to load - check multiple times
-    if (typeof QRCode === 'undefined') {
-        console.error('QRCode library not loaded, waiting...');
-        qrContainer.innerHTML = '<p class="text">Loading QR code library...</p>';
-        
-        // Wait for library to load with multiple attempts
-        let attempts = 0;
-        const checkLibrary = setInterval(() => {
-            attempts++;
-            if (typeof QRCode !== 'undefined') {
-                clearInterval(checkLibrary);
-                console.log('QRCode library loaded after', attempts * 100, 'ms');
-                generateQR(); // Retry now that library is loaded
-            } else if (attempts > 30) {
-                clearInterval(checkLibrary);
-                console.error('QRCode library failed to load after 3 seconds');
-                qrContainer.innerHTML = '<p class="text">QR code library not available. Please check your internet connection and refresh the page.</p>';
+    // Check if staff data is loaded and has qrImage field
+    if (!staffData) {
+        console.error('Staff data not loaded yet');
+        qrContainer.innerHTML = '<p class="text">Loading employee data...</p>';
+        // Try to load data if not already loaded
+        loadStaffData().then(data => {
+            if (data) {
+                staffData = data;
+                generateQR(); // Retry after data loads
             }
-        }, 100);
+        });
         return;
     }
     
-    // Always use production URL for QR code (works when scanned from phone)
-    // Extract user identifier from path to ensure correct URL
-    const user = getUserFromPath();
-    if (!user || user === 'template') {
-        console.error('Could not determine user from URL path or template detected. Pathname:', window.location.pathname);
-        // This should never happen on a real employee card - log error
-        console.error('ERROR: QR code generation failed - no valid user found!');
-        qrContainer.innerHTML = '<p class="text">Error: Could not generate QR code. Please contact support.</p>';
+    // Check if employee has a QR image defined
+    if (!staffData.qrImage) {
+        console.warn('No QR image defined for employee:', staffData.name);
+        qrContainer.innerHTML = '<p class="text">QR code not generated yet.</p>';
         return;
     }
     
-    // Explicitly construct the correct URL for this person
-    // CRITICAL: QR code should point to company domain (nextlevelcleaningltd.co.uk)
-    // The redirect script in HTML will handle redirecting to GitHub Pages if needed
-    // Build URL step by step to ensure no dots replace slashes
-    // DYNAMIC: Works with any category (director, manager, cleaner)
-    const protocol = 'https://';
-    // Use company domain - this is what employees want to share
-    const domain = 'nextlevelcleaningltd.co.uk';
-    const pathSegment1 = 'id';
-    const pathSegment2 = getCategoryFromPath(); // Dynamically get category (director, manager, cleaner)
-    const pathSegment3 = user;
-    
-    // Construct URL with explicit forward slashes
-    // IMPORTANT: Uses company domain - redirect script will handle GitHub Pages redirect if needed
-    // Works for: /id/director/lauren-moore/, /id/manager/john-smith/, /id/cleaner/jane-doe/, etc.
-    var currentUrl = protocol + domain + '/' + pathSegment1 + '/' + pathSegment2 + '/' + pathSegment3 + '/';
-    
-    // Double-check: replace any accidental dots in path with slashes (shouldn't happen, but safety check)
-    const urlObj = new URL(currentUrl);
-    if (urlObj.pathname.indexOf('.') > -1 && !urlObj.pathname.endsWith('.html')) {
-        console.warn('⚠️ WARNING: Found dots in pathname, fixing:', urlObj.pathname);
-        const fixedPath = urlObj.pathname.replace(/\./g, '/');
-        currentUrl = protocol + domain + fixedPath;
-        console.warn('⚠️ Fixed URL:', currentUrl);
-    }
-    
-    // Validate URL format - must start with http:// or https://
-    if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) {
-        console.error('❌ INVALID URL FORMAT - must start with http:// or https://:', currentUrl);
-        qrContainer.innerHTML = '<p class="text">Error: Invalid URL format. Please contact support.</p>';
-        return;
-    }
-    
-    // Check for dots in the PATH (not in domain) - dots in domain (.co.uk) are OK
-    const urlParts = currentUrl.split('//');
-    if (urlParts.length === 2) {
-        const afterProtocol = urlParts[1];
-        const firstSlashIndex = afterProtocol.indexOf('/');
-        
-        if (firstSlashIndex > -1) {
-            // There's a path after the domain
-            const domain = afterProtocol.substring(0, firstSlashIndex);
-            const path = afterProtocol.substring(firstSlashIndex);
-            
-            // Check if path has dots that shouldn't be there (like .director or .index)
-            // Allow .html at the end, but not dots in the middle of path segments
-            const pathSegments = path.split('/').filter(s => s.length > 0);
-            for (let i = 0; i < pathSegments.length; i++) {
-                const segment = pathSegments[i];
-                // If segment has a dot and it's not the last segment ending in .html, it's wrong
-                if (segment.indexOf('.') > -1 && !segment.endsWith('.html') && segment !== 'index.html') {
-                    console.error('❌ INVALID PATH SEGMENT - contains dots:', segment);
-                    // Fix it - replace dots with slashes in this segment
-                    const fixedSegment = segment.replace(/\./g, '/');
-                    pathSegments[i] = fixedSegment;
-                    console.warn('⚠️ Fixed path segment:', segment, '->', fixedSegment);
-                }
-            }
-            
-            // Reconstruct path if we fixed anything
-            const newPath = '/' + pathSegments.join('/');
-            if (newPath !== path) {
-                currentUrl = urlParts[0] + '//' + domain + newPath;
-                console.warn('⚠️ Fixed URL path:', currentUrl);
-            }
-        }
-    }
-    
-    console.log('=== QR CODE GENERATION ===');
-    console.log('User detected:', user);
-    console.log('Category detected:', getCategoryFromPath());
-    console.log('Current pathname:', window.location.pathname);
-    console.log('Domain being used:', domain);
-    console.log('QR code will point to:', currentUrl);
-    console.log('Full URL breakdown:', {
-        protocol: protocol,
-        domain: domain,
-        category: pathSegment2,
-        user: pathSegment3,
-        fullUrl: currentUrl
-    });
-    console.log('✅ QR Code URL: ' + currentUrl);
-    console.log('URL validation: ✅ PASSED');
-    console.log('========================');
-    
-    // Force container visibility
-    qrContainer.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; width: 100% !important; min-height: 256px !important; padding: 1rem !important; background: white !important; border-radius: 12px !important; text-align: center !important; position: relative !important;';
-    
-    // Generate QR code using qrcodejs library (davidshimjs - constructor method)
+    // Display the static QR code image
     try {
-        // Clear container first and remove any debug styling
-        qrContainer.innerHTML = '';
         qrContainer.style.cssText = 'display: block !important; visibility: visible !important; padding: 1rem !important; background: white !important; border-radius: 12px !important; text-align: center !important; min-height: 256px !important; width: 100% !important; box-sizing: border-box !important; position: relative !important; margin: 0 auto !important;';
         
-        console.log('Creating QR code for:', currentUrl);
+        const qrImg = document.createElement('img');
+        qrImg.src = staffData.qrImage;
+        qrImg.alt = `${staffData.name} - QR Code`;
+        qrImg.className = 'qr-static-image';
+        qrImg.style.cssText = 'max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 0 auto !important; border-radius: 8px !important;';
         
-        // Generate QR code using constructor - this creates an img element immediately
-        // CRITICAL: Ensure URL is a string with proper encoding and NO dots in path
-        let qrText = String(currentUrl).trim();
+        // Handle image load errors
+        qrImg.onerror = function() {
+            console.error('Failed to load QR image:', staffData.qrImage);
+            qrContainer.innerHTML = '<p class="text">QR code image not found. Please contact support.</p>';
+        };
         
-        // FINAL SAFETY CHECK: Replace any dots in the path portion with slashes
-        // This catches the bug where id.director appears instead of id/director
-        const urlMatch = qrText.match(/^(https?:\/\/[^\/]+)(\/.*)$/);
-        if (urlMatch) {
-            const domainPart = urlMatch[1];
-            let pathPart = urlMatch[2];
-            
-            // Check if path has dots that shouldn't be there (like .director or .index)
-            if (pathPart.indexOf('.') > -1 && !pathPart.endsWith('.html')) {
-                console.error('❌ CRITICAL BUG DETECTED: Found dots in path!', pathPart);
-                console.error('This should be /id/director/ but found:', pathPart);
-                // Replace dots with slashes in path (but keep domain dots like .co.uk)
-                pathPart = pathPart.replace(/\./g, '/');
-                qrText = domainPart + pathPart;
-                console.warn('⚠️ FIXED QR Code text from:', currentUrl);
-                console.warn('⚠️ FIXED QR Code text to:', qrText);
-            }
-        }
+        qrImg.onload = function() {
+            console.log('✅ QR code image loaded successfully:', staffData.qrImage);
+        };
         
-        console.log('QR Code text (final):', qrText);
-        console.log('QR Code text type:', typeof qrText);
-        console.log('QR Code text length:', qrText.length);
-        
-        // Validate domain is company domain (nextlevelcleaningltd.co.uk)
-        if (qrText.includes('lay162.github.io')) {
-            console.warn('⚠️ QR Code is using GitHub Pages instead of company domain');
-            // Replace with company domain
-            qrText = qrText.replace(/https?:\/\/lay162\.github\.io\/Next-Level-Cleaning/g, 'https://nextlevelcleaningltd.co.uk');
-            console.warn('⚠️ FIXED: Replaced GitHub Pages with company domain');
-            console.warn('⚠️ New QR text:', qrText);
-        }
-        
-        // Validate domain is company domain
-        if (!qrText.includes('nextlevelcleaningltd.co.uk')) {
-            console.error('❌ CRITICAL: QR Code does not use company domain!');
-            console.error('Expected: nextlevelcleaningltd.co.uk');
-            console.error('Actual text:', qrText);
-            qrContainer.innerHTML = '<p class="text">Error: QR code domain incorrect. Please refresh and try again.</p>';
-            return;
-        }
-        
-        // Validate one more time before generating
-        if (!qrText.startsWith('http://') && !qrText.startsWith('https://')) {
-            console.error('❌ QR Code text does not start with http:// or https://');
-            qrContainer.innerHTML = '<p class="text">Error: Invalid QR code URL format.</p>';
-            return;
-        }
-        
-        // Final validation - must contain /id/[category]/ with slashes
-        const categoryPattern = /\/id\/(director|manager|cleaner)\//;
-        if (!categoryPattern.test(qrText)) {
-            console.error('❌ CRITICAL: QR Code text does not contain /id/[category]/ with slashes!');
-            console.error('Actual text:', qrText);
-            qrContainer.innerHTML = '<p class="text">Error: QR code URL format incorrect. Please refresh and try again.</p>';
-            return;
-        }
-        
-        console.log('✅ QR Code validation passed - using GitHub Pages domain');
-        
-        console.log('🔍 QR CODE URL THAT WILL BE ENCODED:', qrText);
-        console.log('🔍 VERIFY THIS URL IS CORRECT BEFORE SCANNING!');
-        
-        // Create wrapper structure for logo overlay
-        qrContainer.innerHTML = '<div class="qr-wrapper"><div id="qrcode"></div></div>';
-        const qrWrapper = qrContainer.querySelector('.qr-wrapper');
-        const qrcodeDiv = qrContainer.querySelector('#qrcode');
-        
-        // Generate QR code with high error correction (H level) to allow logo overlay
-        const qrcode = new QRCode(qrcodeDiv, {
-            text: qrText,
-            width: 220,
-            height: 220,
-            colorDark: '#000000',
-            colorLight: '#FFFFFF',
-            correctLevel: QRCode.CorrectLevel.H
-        });
-        
-        // Add logo overlay after QR code is fully generated
-        setTimeout(() => {
-            if (!qrWrapper.querySelector('.qr-logo')) {
-                const logo = document.createElement('img');
-                logo.src = '/assets/NLC-SYMBOL-LOGO.png';
-                logo.className = 'qr-logo';
-                logo.alt = 'Next Level Cleaning Ltd';
-                logo.onload = function() {
-                    console.log('QR logo loaded successfully');
-                };
-                logo.onerror = function() {
-                    console.warn('QR logo failed to load, trying alternative path');
-                    logo.src = '/assets/NEXT-LEVEL-CLEANING-LOGO.png';
-                };
-                qrWrapper.appendChild(logo);
-            }
-        }, 400);
-        
-        // Check immediately what was created
-        console.log('QRCode instance created. Container HTML:', qrContainer.innerHTML);
-        
-        // Wait a moment for the library to render, then check
-        setTimeout(() => {
-            // Ensure container is visible first
-            qrContainer.style.setProperty('display', 'block', 'important');
-            qrContainer.style.setProperty('visibility', 'visible', 'important');
-            qrContainer.style.setProperty('opacity', '1', 'important');
-            qrContainer.style.setProperty('min-height', '256px', 'important');
-            qrContainer.style.setProperty('width', '100%', 'important');
-            
-            // Look for QR code elements inside the qrcode div (not the logo)
-            const qrImg = qrcodeDiv.querySelector('img');
-            const qrCanvas = qrcodeDiv.querySelector('canvas');
-            const qrSvg = qrcodeDiv.querySelector('svg');
-            
-            console.log('After timeout - img:', qrImg, 'canvas:', qrCanvas, 'svg:', qrSvg);
-            console.log('Container computed styles:', {
-                display: window.getComputedStyle(qrContainer).display,
-                visibility: window.getComputedStyle(qrContainer).visibility,
-                width: window.getComputedStyle(qrContainer).width,
-                height: window.getComputedStyle(qrContainer).height
-            });
-            
-            if (qrSvg) {
-                console.log('Found SVG element - this is the QR code!');
-                // Hide canvas and img if they exist
-                if (qrCanvas) qrCanvas.style.cssText = 'display: none !important;';
-                if (qrImg) qrImg.style.cssText = 'display: none !important;';
-                // Force visible styling on SVG
-                qrSvg.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 100% !important; height: 100% !important; border: none !important;';
-                qrSvg.setAttribute('width', '220');
-                qrSvg.setAttribute('height', '220');
-                console.log('QR SVG should now be visible');
-            } else if (qrImg) {
-                console.log('Found img element with src:', qrImg.src ? qrImg.src.substring(0, 50) + '...' : 'NO SRC');
-                // Hide canvas if it exists
-                if (qrCanvas) {
-                    qrCanvas.style.cssText = 'display: none !important; visibility: hidden !important;';
-                    console.log('Hiding canvas element');
-                }
-                
-                // Get computed styles before changes
-                const beforeDisplay = window.getComputedStyle(qrImg).display;
-                const beforeVisibility = window.getComputedStyle(qrImg).visibility;
-                const beforeOpacity = window.getComputedStyle(qrImg).opacity;
-                console.log('Before styling - display:', beforeDisplay, 'visibility:', beforeVisibility, 'opacity:', beforeOpacity);
-                
-                // Remove any inline styles that might hide the img
-                qrImg.removeAttribute('style');
-                
-                // Force visible styling on img with all possible overrides
-                qrImg.style.setProperty('display', 'block', 'important');
-                qrImg.style.setProperty('visibility', 'visible', 'important');
-                qrImg.style.setProperty('opacity', '1', 'important');
-                qrImg.style.setProperty('margin', '0 auto', 'important');
-                qrImg.style.setProperty('width', '100%', 'important');
-                qrImg.style.setProperty('height', '100%', 'important');
-                qrImg.style.setProperty('border', 'none', 'important');
-                qrImg.style.setProperty('position', 'relative', 'important');
-                qrImg.style.setProperty('z-index', '1', 'important');
-                qrImg.style.setProperty('max-width', '100%', 'important');
-                
-                // Set attributes
-                qrImg.setAttribute('width', '220');
-                qrImg.setAttribute('height', '220');
-                
-                // Ensure container is visible too
-                qrContainer.style.setProperty('display', 'block', 'important');
-                qrContainer.style.setProperty('visibility', 'visible', 'important');
-                qrContainer.style.setProperty('overflow', 'visible', 'important');
-                
-                // Force multiple reflows
-                void qrImg.offsetHeight;
-                void qrContainer.offsetHeight;
-                
-                // Check computed styles after
-                const afterDisplay = window.getComputedStyle(qrImg).display;
-                const afterVisibility = window.getComputedStyle(qrImg).visibility;
-                const afterOpacity = window.getComputedStyle(qrImg).opacity;
-                const afterWidth = window.getComputedStyle(qrImg).width;
-                const afterHeight = window.getComputedStyle(qrImg).height;
-                console.log('After styling - display:', afterDisplay, 'visibility:', afterVisibility, 'opacity:', afterOpacity, 'width:', afterWidth, 'height:', afterHeight);
-                
-                // Final check - if still not visible, try one more approach
-                if (afterDisplay === 'none' || afterVisibility === 'hidden' || afterOpacity === '0') {
-                    console.warn('QR img still not visible after styling, trying alternative approach');
-                    qrImg.style.cssText = '';
-                    qrImg.className = '';
-                    qrImg.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 100% !important; height: 100% !important; border: none !important; position: relative !important; z-index: 1 !important; max-width: 100% !important;';
-                }
-                
-                // Double-check it's actually in the viewport
-                const rect = qrImg.getBoundingClientRect();
-                console.log('QR img bounding rect:', {
-                    top: rect.top,
-                    left: rect.left,
-                    width: rect.width,
-                    height: rect.height,
-                    visible: rect.width > 0 && rect.height > 0
-                });
-                
-                // If dimensions are 0, force them
-                if (rect.width === 0 || rect.height === 0) {
-                    console.warn('QR img has zero dimensions, forcing size');
-                    qrImg.style.setProperty('width', '220px', 'important');
-                    qrImg.style.setProperty('height', '220px', 'important');
-                    qrImg.setAttribute('width', '220');
-                    qrImg.setAttribute('height', '220');
-                }
-            } else if (qrCanvas) {
-                console.log('Found canvas element - making it visible');
-                // Hide img if it exists
-                if (qrImg) qrImg.style.cssText = 'display: none !important;';
-                // Remove any inline styles from canvas
-                qrCanvas.removeAttribute('style');
-                qrCanvas.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 100% !important; height: 100% !important;';
-                qrCanvas.setAttribute('width', '220');
-                qrCanvas.setAttribute('height', '220');
-                console.log('QR canvas should now be visible');
-            } else {
-                console.error('No img, canvas, or SVG found in container');
-                console.log('Container HTML:', qrContainer.innerHTML);
-                qrContainer.innerHTML = '<p class="text">QR code generation failed. Please refresh and try again.</p>';
-            }
-        }, 300);
+        qrContainer.appendChild(qrImg);
         
     } catch (error) {
-        console.error('QR code generation error:', error);
-        qrContainer.innerHTML = '<p class="text">Error: ' + error.message + '</p>';
+        console.error('Error displaying QR code image:', error);
+        qrContainer.innerHTML = '<p class="text">Error loading QR code. Please refresh and try again.</p>';
     }
 }
 

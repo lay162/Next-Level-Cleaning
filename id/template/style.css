@@ -707,6 +707,17 @@ footer.text a {
     display: block;
 }
 
+/* Static QR code image styling */
+.qr-static-image {
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* Legacy QR code styles - kept for compatibility */
 #qr img:not(.qr-logo) {
     display: block !important;
@@ -938,6 +949,12 @@ footer.text a {
         width: 45px;
         height: 45px;
         padding: 4px;
+    }
+    
+    .qr-static-image {
+        max-width: 90%;
+        width: auto;
+        height: auto;
     }
 
     #copyURL {
