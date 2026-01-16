@@ -47,9 +47,12 @@ async function loadStaffData() {
         // Try multiple paths in order of likelihood
         // CRITICAL: For local testing, try relative path first
         // For production, try absolute and full URL
+        // Try multiple paths - works for both GitHub Pages and custom domain
+        const baseUrl = window.location.origin;
         const pathsToTry = [
-            `../../data/${user}.json`,  // Relative path from /id/director/jenny-roscoe/ (works locally)
-            `/data/${user}.json`,        // Absolute path (works on most servers)
+            `/data/${user}.json`,        // Absolute path (works on GitHub Pages and custom domain)
+            `../../data/${user}.json`,   // Relative path from /id/director/jenny-roscoe/ (works locally)
+            `${baseUrl}/data/${user}.json`,  // Full URL with current origin (works everywhere)
             `https://nextlevelcleaningltd.co.uk/data/${user}.json`,  // Full production URL (works when scanned)
             `../data/${user}.json`,      // Alternative relative (one level up)
             `./data/${user}.json`,       // Alternative relative (same directory)
