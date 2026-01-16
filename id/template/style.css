@@ -698,7 +698,7 @@ footer.text a {
     background: white;
     border-radius: 16px;
     padding: 1.5rem;
-    max-width: 320px;
+    max-width: 520px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -797,7 +797,7 @@ footer.text a {
 
 /* Static QR code image styling */
 .qr-static-image {
-    max-width: 100%;
+    max-width: 450px;
     width: auto;
     height: auto;
     display: block;
@@ -1040,7 +1040,7 @@ footer.text a {
     }
     
     .qr-static-image {
-        max-width: 90%;
+        max-width: 320px;
         width: auto;
         height: auto;
     }
