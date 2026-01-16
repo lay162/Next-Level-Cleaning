@@ -977,13 +977,6 @@ function generateQR() {
         
         console.log('✅ QR Code validation passed - using GitHub Pages domain');
         
-        // CRITICAL: Display the URL that will be in the QR code so user can verify
-        const urlDisplay = document.createElement('p');
-        urlDisplay.className = 'text';
-        urlDisplay.style.cssText = 'font-size: 0.75rem; word-break: break-all; margin: 0.5rem 0; color: #666;';
-        urlDisplay.textContent = 'QR Code URL: ' + qrText;
-        qrContainer.appendChild(urlDisplay);
-        
         console.log('🔍 QR CODE URL THAT WILL BE ENCODED:', qrText);
         console.log('🔍 VERIFY THIS URL IS CORRECT BEFORE SCANNING!');
         
