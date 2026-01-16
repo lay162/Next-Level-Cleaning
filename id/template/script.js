@@ -386,13 +386,40 @@ function populateTemplate(data) {
             linkedin: data.social.linkedin
         };
         
-        // Update social media links
-        const socialAnchors = document.querySelectorAll('.actions.secondary a');
-        if (socialAnchors.length >= 4) {
-            if (socialLinks.facebook) socialAnchors[0].href = socialLinks.facebook;
-            if (socialLinks.instagram) socialAnchors[1].href = socialLinks.instagram;
-            if (socialLinks.tiktok) socialAnchors[2].href = socialLinks.tiktok;
-            if (socialLinks.linkedin) socialAnchors[3].href = socialLinks.linkedin;
+        console.log('🔗 Updating social media links:', socialLinks);
+        
+        // Update social media links using aria-label for precise targeting
+        const facebookLink = document.querySelector('a[aria-label="facebook"]');
+        const instagramLink = document.querySelector('a[aria-label="instagram"]');
+        const tiktokLink = document.querySelector('a[aria-label="TikTok"]');
+        const linkedinLink = document.querySelector('a[aria-label="linkedin"]');
+        
+        if (facebookLink && socialLinks.facebook) {
+            facebookLink.href = socialLinks.facebook;
+            console.log('✅ Facebook link updated:', socialLinks.facebook);
+        } else {
+            console.warn('⚠️ Facebook link not found or missing data');
+        }
+        
+        if (instagramLink && socialLinks.instagram) {
+            instagramLink.href = socialLinks.instagram;
+            console.log('✅ Instagram link updated:', socialLinks.instagram);
+        } else {
+            console.warn('⚠️ Instagram link not found or missing data');
+        }
+        
+        if (tiktokLink && socialLinks.tiktok) {
+            tiktokLink.href = socialLinks.tiktok;
+            console.log('✅ TikTok link updated:', socialLinks.tiktok);
+        } else {
+            console.warn('⚠️ TikTok link not found or missing data');
+        }
+        
+        if (linkedinLink && socialLinks.linkedin) {
+            linkedinLink.href = socialLinks.linkedin;
+            console.log('✅ LinkedIn link updated:', socialLinks.linkedin);
+        } else {
+            console.warn('⚠️ LinkedIn link not found or missing data');
         }
     }
     
