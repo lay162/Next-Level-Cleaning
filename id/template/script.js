@@ -358,31 +358,16 @@ function populateTemplate(data) {
     const callLink = document.getElementById('callLink');
     if (callLink && data.phone) {
         callLink.href = `tel:${data.phone}`;
-        callLink.setAttribute('target', '_blank');
-        callLink.setAttribute('rel', 'noopener noreferrer');
-        console.log('✅ Call link updated:', callLink.href);
-    } else {
-        console.warn('⚠️ Call link not found or missing phone data');
     }
     
     const emailLink = document.getElementById('emailLink');
     if (emailLink && data.email) {
         emailLink.href = `mailto:${data.email}`;
-        emailLink.setAttribute('target', '_blank');
-        emailLink.setAttribute('rel', 'noopener noreferrer');
-        console.log('✅ Email link updated:', emailLink.href);
-    } else {
-        console.warn('⚠️ Email link not found or missing email data');
     }
     
     const websiteLink = document.getElementById('websiteLink');
     if (websiteLink && data.website) {
         websiteLink.href = data.website;
-        websiteLink.setAttribute('target', '_blank');
-        websiteLink.setAttribute('rel', 'noopener noreferrer');
-        console.log('✅ Website link updated:', websiteLink.href);
-    } else {
-        console.warn('⚠️ Website link not found or missing website data');
     }
     
     // Update VCF download link
@@ -390,11 +375,6 @@ function populateTemplate(data) {
     if (vcardLink && data.contactVcf) {
         vcardLink.href = data.contactVcf;
         vcardLink.download = data.contactVcf;
-        vcardLink.setAttribute('target', '_blank');
-        vcardLink.setAttribute('rel', 'noreferrer');
-        console.log('✅ VCard link updated:', vcardLink.href);
-    } else {
-        console.warn('⚠️ VCard link not found or missing contactVcf data');
     }
     
     // Update social links (if they exist in the template)
@@ -416,8 +396,6 @@ function populateTemplate(data) {
         
         if (facebookLink && socialLinks.facebook) {
             facebookLink.href = socialLinks.facebook;
-            facebookLink.setAttribute('target', '_blank');
-            facebookLink.setAttribute('rel', 'noopener noreferrer');
             console.log('✅ Facebook link updated:', socialLinks.facebook);
         } else {
             console.warn('⚠️ Facebook link not found or missing data');
@@ -425,8 +403,6 @@ function populateTemplate(data) {
         
         if (instagramLink && socialLinks.instagram) {
             instagramLink.href = socialLinks.instagram;
-            instagramLink.setAttribute('target', '_blank');
-            instagramLink.setAttribute('rel', 'noopener noreferrer');
             console.log('✅ Instagram link updated:', socialLinks.instagram);
         } else {
             console.warn('⚠️ Instagram link not found or missing data');
@@ -434,8 +410,6 @@ function populateTemplate(data) {
         
         if (tiktokLink && socialLinks.tiktok) {
             tiktokLink.href = socialLinks.tiktok;
-            tiktokLink.setAttribute('target', '_blank');
-            tiktokLink.setAttribute('rel', 'noopener noreferrer');
             console.log('✅ TikTok link updated:', socialLinks.tiktok);
         } else {
             console.warn('⚠️ TikTok link not found or missing data');
@@ -443,48 +417,11 @@ function populateTemplate(data) {
         
         if (linkedinLink && socialLinks.linkedin) {
             linkedinLink.href = socialLinks.linkedin;
-            linkedinLink.setAttribute('target', '_blank');
-            linkedinLink.setAttribute('rel', 'noopener noreferrer');
             console.log('✅ LinkedIn link updated:', socialLinks.linkedin);
         } else {
             console.warn('⚠️ LinkedIn link not found or missing data');
         }
     }
-    
-    // Verify all contact links are set
-    console.log('🔍 Verifying all contact links...');
-    const callLinkCheck = document.getElementById('callLink');
-    const emailLinkCheck = document.getElementById('emailLink');
-    const websiteLinkCheck = document.getElementById('websiteLink');
-    const vcardCheck = document.getElementById('vcard');
-    
-    if (callLinkCheck) console.log('✅ Call link:', callLinkCheck.href);
-    if (emailLinkCheck) console.log('✅ Email link:', emailLinkCheck.href);
-    if (websiteLinkCheck) console.log('✅ Website link:', websiteLinkCheck.href);
-    if (vcardCheck) console.log('✅ VCard link:', vcardCheck.href);
-}
-
-// Function to verify all links are properly set
-function verifyAllLinks() {
-    console.log('🔍 Verifying all clickable links...');
-    
-    const allLinks = document.querySelectorAll('a[href]');
-    let brokenLinks = 0;
-    
-    allLinks.forEach((link, index) => {
-        const href = link.getAttribute('href');
-        if (!href || href === '#' || href === '' || href === 'javascript:void(0)') {
-            console.warn(`⚠️ Link ${index} has invalid href:`, href, link);
-            brokenLinks++;
-        }
-    });
-    
-    if (brokenLinks === 0) {
-        console.log('✅ All links verified - no broken links found');
-    } else {
-        console.error(`❌ Found ${brokenLinks} broken or invalid links`);
-    }
-}
     
     // Render content stream
     if (data.contentStream && data.contentStream.length > 0) {
@@ -776,36 +713,22 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Header controls - Initialize after DOM is ready
-function initializeClickableElements() {
-    const s = document.getElementById("share");
-    const sqr = document.getElementById("showQR");
+// Header controls
+let s = document.getElementById("share");
+let sqr = document.getElementById("showQR");
 
-    if (s) {
-        // Remove any existing listeners to prevent duplicates
-        s.replaceWith(s.cloneNode(true));
-        const newS = document.getElementById("share");
-        newS.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleShare();
-        });
-        console.log('✅ Share button initialized');
-    } else {
-        console.warn('⚠️ Share button not found');
-    }
+if (s) {
+    s.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleShare();
+    });
+}
 
-    if (sqr) {
-        // Remove any existing listeners to prevent duplicates
-        sqr.replaceWith(sqr.cloneNode(true));
-        const newSqr = document.getElementById("showQR");
-        newSqr.addEventListener('click', function(e) {
-            e.preventDefault();
-            showModal('qr');
-        });
-        console.log('✅ QR button initialized');
-    } else {
-        console.warn('⚠️ QR button not found');
-    }
+if (sqr) {
+    sqr.addEventListener('click', function(e) {
+        e.preventDefault();
+        showModal('qr');
+    });
 }
 
 // Share functionality
@@ -945,9 +868,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('Current URL:', window.location.href);
     console.log('Current pathname:', window.location.pathname);
     
-    // Initialize all clickable elements first
-    initializeClickableElements();
-    
     // CRITICAL: Check if we're on an employee card page - should NEVER show template
     const user = getUserFromPath();
     if (!user || user === 'template') {
@@ -965,11 +885,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('✅ Staff data loaded on DOMContentLoaded:', staffData.name);
         populateTemplate(staffData);
         
-        // Re-initialize clickable elements after data is loaded to ensure links are updated
+        // CRITICAL: Verify data was applied - if still showing "Loading..." or "TEMPLATE", something is wrong
         setTimeout(() => {
-            initializeClickableElements();
-            
-            // CRITICAL: Verify data was applied - if still showing "Loading..." or "TEMPLATE", something is wrong
             const verifyName = document.getElementById('staffName')?.textContent;
             const verifyRole = document.getElementById('staffRole')?.textContent;
             if (verifyName === 'Loading...' || verifyName === 'TEMPLATE NAME' || verifyName === 'ERROR: Data not loaded') {
@@ -983,9 +900,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (roleEl) roleEl.textContent = staffData.role;
                 console.log('✅ Forced update of name and role');
             }
-            
-            // Verify all links are properly set
-            verifyAllLinks();
         }, 100);
     } else {
         console.error('❌ Failed to load data on DOMContentLoaded');
