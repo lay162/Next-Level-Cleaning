@@ -577,25 +577,46 @@ footer.text a {
 
 /* Cross-link button styling - employee-specific links */
 .linked-card-button {
-    max-width: 260px;
-    width: 100%;
-    height: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    width: fit-content;
+    max-width: 320px;
     border-radius: 999px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: block;
-    margin: 0 auto;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    object-fit: cover;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    margin: 1.5rem auto;
 }
 
 .linked-card-button:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+    opacity: 0.95;
 }
 
-.linked-card-button:active {
-    transform: scale(0.98);
+.linked-card-button img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    flex: 0 0 auto;
+}
+
+.linked-card-button span {
+    white-space: nowrap;
+}
+
+.linked-card-button.linked-purple {
+    background: #7c3aed;
+}
+
+.linked-card-button.linked-pink {
+    background: #db2777;
 }
 
 /* Ensure profile images display correctly with object-fit: cover */
