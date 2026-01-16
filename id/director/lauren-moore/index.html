@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title id="pageTitle">Loading... - Next Level Cleaning Ltd</title>
-    <!-- CRITICAL: Auto-redirect to GitHub Pages if accessed via custom domain with old Netlify cache -->
-    <!-- This ensures QR codes show company domain but users get correct employee card -->
+    <!-- CRITICAL: Auto-redirect to GitHub Pages if accessed via company domain with old Netlify cache -->
+    <!-- This ensures QR codes show company domain (nextlevelcleaningltd.co.uk) but users get correct employee card -->
+    <!-- Works even if company domain still points to old Netlify cache -->
     <script>
         (function() {
             const currentHost = window.location.hostname;
             const currentPath = window.location.pathname;
             
-            // If accessed via custom domain (which may point to old Netlify cache)
+            // If accessed via company domain (which may point to old Netlify cache)
             if (currentHost === 'nextlevelcleaningltd.co.uk' || currentHost.includes('nextlevelcleaningltd.co.uk')) {
                 // Check if this is an employee card path
                 if (currentPath.includes('/id/director/') || currentPath.includes('/id/manager/') || currentPath.includes('/id/cleaner/')) {
                     // Immediately redirect to GitHub Pages version (shows correct employee card)
+                    // This works even if old HTML files don't have this script - meta refresh will handle it
                     const githubUrl = 'https://lay162.github.io/Next-Level-Cleaning' + currentPath;
                     // Only redirect if not already on GitHub Pages
                     if (!window.location.href.includes('github.io')) {
@@ -27,6 +29,8 @@
             }
         })();
     </script>
+    <!-- Meta refresh as backup - works even in old HTML files without the script above -->
+    <meta http-equiv="refresh" content="0;url=https://lay162.github.io/Next-Level-Cleaning/id/director/lauren-moore/" id="metaRedirect">
     <link rel="stylesheet" href="../../template/style.css?v=3.0">
 </head>
 <body id="body">

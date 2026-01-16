@@ -819,21 +819,21 @@ function generateQR() {
     }
     
     // Explicitly construct the correct URL for this person
-    // CRITICAL: QR code should point directly to GitHub Pages where the correct employee card is hosted
+    // CRITICAL: QR code should point to company domain (nextlevelcleaningltd.co.uk)
+    // The redirect script in HTML will handle redirecting to GitHub Pages if needed
     // Build URL step by step to ensure no dots replace slashes
     // DYNAMIC: Works with any category (director, manager, cleaner)
     const protocol = 'https://';
-    // Use GitHub Pages domain - this is where the employee cards are actually hosted
-    const domain = 'lay162.github.io';
-    const repoPath = '/Next-Level-Cleaning';
+    // Use company domain - this is what employees want to share
+    const domain = 'nextlevelcleaningltd.co.uk';
     const pathSegment1 = 'id';
     const pathSegment2 = getCategoryFromPath(); // Dynamically get category (director, manager, cleaner)
     const pathSegment3 = user;
     
     // Construct URL with explicit forward slashes
-    // IMPORTANT: Points directly to GitHub Pages where the correct employee card is hosted
+    // IMPORTANT: Uses company domain - redirect script will handle GitHub Pages redirect if needed
     // Works for: /id/director/lauren-moore/, /id/manager/john-smith/, /id/cleaner/jane-doe/, etc.
-    var currentUrl = protocol + domain + repoPath + '/' + pathSegment1 + '/' + pathSegment2 + '/' + pathSegment3 + '/';
+    var currentUrl = protocol + domain + '/' + pathSegment1 + '/' + pathSegment2 + '/' + pathSegment3 + '/';
     
     // Double-check: replace any accidental dots in path with slashes (shouldn't happen, but safety check)
     const urlObj = new URL(currentUrl);
@@ -941,19 +941,19 @@ function generateQR() {
         console.log('QR Code text type:', typeof qrText);
         console.log('QR Code text length:', qrText.length);
         
-        // Validate domain is GitHub Pages (where employee cards are hosted)
-        if (qrText.includes('nextlevelcleaningltd.co.uk')) {
-            console.warn('⚠️ QR Code is using custom domain instead of GitHub Pages');
-            // Replace with GitHub Pages URL
-            qrText = qrText.replace(/https?:\/\/nextlevelcleaningltd\.co\.uk/g, 'https://lay162.github.io/Next-Level-Cleaning');
-            console.warn('⚠️ FIXED: Replaced custom domain with GitHub Pages URL');
+        // Validate domain is company domain (nextlevelcleaningltd.co.uk)
+        if (qrText.includes('lay162.github.io')) {
+            console.warn('⚠️ QR Code is using GitHub Pages instead of company domain');
+            // Replace with company domain
+            qrText = qrText.replace(/https?:\/\/lay162\.github\.io\/Next-Level-Cleaning/g, 'https://nextlevelcleaningltd.co.uk');
+            console.warn('⚠️ FIXED: Replaced GitHub Pages with company domain');
             console.warn('⚠️ New QR text:', qrText);
         }
         
-        // Validate domain is GitHub Pages
-        if (!qrText.includes('lay162.github.io')) {
-            console.error('❌ CRITICAL: QR Code does not use GitHub Pages domain!');
-            console.error('Expected: lay162.github.io');
+        // Validate domain is company domain
+        if (!qrText.includes('nextlevelcleaningltd.co.uk')) {
+            console.error('❌ CRITICAL: QR Code does not use company domain!');
+            console.error('Expected: nextlevelcleaningltd.co.uk');
             console.error('Actual text:', qrText);
             qrContainer.innerHTML = '<p class="text">Error: QR code domain incorrect. Please refresh and try again.</p>';
             return;
