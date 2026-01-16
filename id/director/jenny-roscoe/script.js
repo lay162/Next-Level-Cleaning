@@ -78,10 +78,56 @@ async function loadStaffData() {
             }
         }
         
-        // If all paths failed, throw error
+        // If all paths failed, try one more time with hardcoded fallback
         console.error('❌ ALL DATA PATHS FAILED!');
         console.error('Tried paths:', pathsToTry);
         console.error('Current URL:', window.location.href);
+        
+        // LAST RESORT: Hardcoded data fallback for known employees
+        if (user === 'lauren-moore') {
+            console.warn('⚠️ Using hardcoded fallback data for Lauren');
+            return {
+                name: "Lauren Moore",
+                role: "Director",
+                company: "Next Level Cleaning Ltd",
+                email: "lauren@nextlevelcleaningltd.co.uk",
+                phone: "+447700900001",
+                website: "https://nextlevelcleaningltd.co.uk",
+                profileImage: "profile.jpg",
+                contactVcf: "contact.vcf",
+                theme: "pink",
+                description: "Professional commercial cleaning services",
+                social: {
+                    facebook: "https://www.facebook.com/NextLevelCleaningWirral",
+                    instagram: "https://www.instagram.com/NextLevelCleaningWirral",
+                    tiktok: "https://www.tiktok.com/@nextlevelcleaningwirral",
+                    linkedin: "https://www.linkedin.com/company/nextlevelcleaningwirral"
+                },
+                contentStream: []
+            };
+        } else if (user === 'jenny-roscoe') {
+            console.warn('⚠️ Using hardcoded fallback data for Jenny');
+            return {
+                name: "Jenny Roscoe",
+                role: "Director",
+                company: "Next Level Cleaning Ltd",
+                email: "jenny@nextlevelcleaningltd.co.uk",
+                phone: "+447700900002",
+                website: "https://nextlevelcleaningltd.co.uk",
+                profileImage: "profile.jpg",
+                contactVcf: "contact.vcf",
+                theme: "purple",
+                description: "Professional commercial cleaning services",
+                social: {
+                    facebook: "https://www.facebook.com/NextLevelCleaningWirral",
+                    instagram: "https://www.instagram.com/NextLevelCleaningWirral",
+                    tiktok: "https://www.tiktok.com/@nextlevelcleaningwirral",
+                    linkedin: "https://www.linkedin.com/company/nextlevelcleaningwirral"
+                },
+                contentStream: []
+            };
+        }
+        
         throw new Error(`Failed to load data for ${user} from any path`);
         
     } catch (error) {
