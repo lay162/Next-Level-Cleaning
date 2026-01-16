@@ -8,7 +8,7 @@ function getUserFromPath() {
     // Extract from /id/[category]/[employee-name]/
     // Categories: director, manager, cleaner
     // Handle both /id/director/lauren-moore/ and /id/director/lauren-moore/index.html
-    const match = path.match(/\/id\/(director|manager|cleaner)\/([^\/]+)/);
+    const match = path.match(/\/(?:[^\/]+\/)?id\/(director|manager|cleaner)\/([^\/]+)(?:\/index\.html)?\/?$/);
     if (match && match[2]) {
         const user = match[2];
         // Make sure it's not 'template' or 'index.html'
@@ -28,8 +28,8 @@ function getUserFromPath() {
 // Get category from URL path (director, manager, cleaner)
 function getCategoryFromPath() {
     const path = window.location.pathname;
-    // Extract category from /id/[category]/[employee-name]/
-    const match = path.match(/\/id\/(director|manager|cleaner)\//);
+    // Extract category from /id/[category]/[employee-name]/ or /[repo]/id/[category]/[employee-name]/
+    const match = path.match(/\/(?:[^\/]+\/)?id\/(director|manager|cleaner)\/([^\/]+)(?:\/index\.html)?\/?$/);
     if (match && match[1]) {
         return match[1];
     }
@@ -50,8 +50,8 @@ async function loadStaffData() {
         const path = window.location.pathname;
         const href = window.location.href;
         
-        // Try to extract from any category path: /id/[category]/[employee-name]/
-        const categoryMatch = path.match(/\/id\/(director|manager|cleaner)\/([^\/]+)/);
+        // Try to extract from any category path: /id/[category]/[employee-name]/ or /[repo]/id/[category]/[employee-name]/
+        const categoryMatch = path.match(/\/(?:[^\/]+\/)?id\/(director|manager|cleaner)\/([^\/]+)(?:\/index\.html)?\/?$/);
         if (categoryMatch && categoryMatch[2]) {
             user = categoryMatch[2];
             console.log('✅ Detected user from URL:', user);
@@ -136,6 +136,7 @@ async function loadStaffData() {
                 website: "https://nextlevelcleaningltd.co.uk",
                 profileImage: "profile.jpg",
                 contactVcf: "contact.vcf",
+                qrImage: "/assets/qr-codes/Laurens-QR-code-.png",
                 theme: "pink",
                 description: "Professional commercial cleaning services",
                 social: {
@@ -157,6 +158,7 @@ async function loadStaffData() {
                 website: "https://nextlevelcleaningltd.co.uk",
                 profileImage: "profile.jpg",
                 contactVcf: "contact.vcf",
+                qrImage: "/assets/qr-codes/Jenny's Qr-code.png",
                 theme: "purple",
                 description: "Professional commercial cleaning services",
                 social: {
@@ -182,8 +184,8 @@ async function loadStaffData() {
         const href = window.location.href;
         let fallbackUser = null;
         
-        // Try to extract employee name from URL
-        const categoryMatch = path.match(/\/id\/(director|manager|cleaner)\/([^\/]+)/);
+        // Try to extract employee name from URL (handles both custom domain and GitHub Pages)
+        const categoryMatch = path.match(/\/(?:[^\/]+\/)?id\/(director|manager|cleaner)\/([^\/]+)(?:\/index\.html)?\/?$/);
         if (categoryMatch && categoryMatch[2]) {
             fallbackUser = categoryMatch[2];
         } else {
@@ -203,6 +205,7 @@ async function loadStaffData() {
                 website: "https://nextlevelcleaningltd.co.uk",
                 profileImage: "profile.jpg",
                 contactVcf: "contact.vcf",
+                qrImage: "/assets/qr-codes/Laurens-QR-code-.png",
                 theme: "pink",
                 description: "Professional commercial cleaning services",
                 social: {
@@ -223,6 +226,7 @@ async function loadStaffData() {
                 website: "https://nextlevelcleaningltd.co.uk",
                 profileImage: "profile.jpg",
                 contactVcf: "contact.vcf",
+                qrImage: "/assets/qr-codes/Jenny's Qr-code.png",
                 theme: "purple",
                 description: "Professional commercial cleaning services",
                 social: {
@@ -655,6 +659,7 @@ function showModal(view) {
     
     m.style.visibility = 'visible';
     m.style.opacity = '1';
+    m.style.pointerEvents = 'auto';
     document.body.style.overflow = 'hidden';
 }
 
@@ -662,6 +667,7 @@ function hideModal() {
     if (!m) return;
     m.style.visibility = 'hidden';
     m.style.opacity = '0';
+    m.style.pointerEvents = 'none';
     document.body.style.overflow = '';
 }
 
