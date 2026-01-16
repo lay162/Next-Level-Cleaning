@@ -32,6 +32,29 @@
   to = "/index.html"
   status = 200
 
+# Headers to prevent caching of employee card files
+[[headers]]
+  for = "/id/director/*/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/id/director/*/script.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/data/*.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+    Access-Control-Allow-Origin = "*"
+
 # Netlify Forms Configuration
 # Form submissions will be sent to the email configured in Netlify dashboard
 # Go to: Site settings > Forms > Form notifications
