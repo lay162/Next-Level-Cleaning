@@ -667,35 +667,66 @@ footer.text a {
     overflow: visible !important;
 }
 
-#qr img {
+/* QR Code wrapper with logo overlay */
+.qr-wrapper {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto;
+    display: inline-block;
+}
+
+#qrcode {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#qrcode canvas,
+#qrcode img,
+#qrcode svg {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+
+.qr-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 55px;
+    height: 55px;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 5px;
+    border-radius: 50%;
+    z-index: 10;
+    object-fit: contain;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: block;
+}
+
+/* Legacy QR code styles - kept for compatibility */
+#qr img:not(.qr-logo) {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     margin: 0 auto !important;
     max-width: 100% !important;
-    width: 256px !important;
-    height: 256px !important;
     border: none !important;
-    position: static !important;
-    z-index: 10 !important;
     image-rendering: crisp-edges !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    bottom: auto !important;
 }
 
-#qr canvas {
+#qr canvas:not(.qr-logo) {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     margin: 0 auto !important;
     max-width: 100% !important;
-    width: 256px !important;
-    height: 256px !important;
 }
 
-#qr svg {
+#qr svg:not(.qr-logo) {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -890,12 +921,23 @@ footer.text a {
         min-height: 200px !important;
     }
 
-    #qr img,
+    #qr img:not(.qr-logo),
     #qr canvas,
     #qr svg {
         width: 200px !important;
         height: 200px !important;
         max-width: 100% !important;
+    }
+    
+    .qr-wrapper {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .qr-logo {
+        width: 45px;
+        height: 45px;
+        padding: 4px;
     }
 
     #copyURL {

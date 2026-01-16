@@ -980,14 +980,38 @@ function generateQR() {
         console.log('🔍 QR CODE URL THAT WILL BE ENCODED:', qrText);
         console.log('🔍 VERIFY THIS URL IS CORRECT BEFORE SCANNING!');
         
-        const qrcode = new QRCode(qrContainer, {
+        // Create wrapper structure for logo overlay
+        qrContainer.innerHTML = '<div class="qr-wrapper"><div id="qrcode"></div></div>';
+        const qrWrapper = qrContainer.querySelector('.qr-wrapper');
+        const qrcodeDiv = qrContainer.querySelector('#qrcode');
+        
+        // Generate QR code with high error correction (H level) to allow logo overlay
+        const qrcode = new QRCode(qrcodeDiv, {
             text: qrText,
-            width: 256,
-            height: 256,
+            width: 220,
+            height: 220,
             colorDark: '#000000',
             colorLight: '#FFFFFF',
-            correctLevel: QRCode.CorrectLevel.M
+            correctLevel: QRCode.CorrectLevel.H
         });
+        
+        // Add logo overlay after QR code is fully generated
+        setTimeout(() => {
+            if (!qrWrapper.querySelector('.qr-logo')) {
+                const logo = document.createElement('img');
+                logo.src = '/assets/NLC-SYMBOL-LOGO.png';
+                logo.className = 'qr-logo';
+                logo.alt = 'Next Level Cleaning Ltd';
+                logo.onload = function() {
+                    console.log('QR logo loaded successfully');
+                };
+                logo.onerror = function() {
+                    console.warn('QR logo failed to load, trying alternative path');
+                    logo.src = '/assets/NEXT-LEVEL-CLEANING-LOGO.png';
+                };
+                qrWrapper.appendChild(logo);
+            }
+        }, 400);
         
         // Check immediately what was created
         console.log('QRCode instance created. Container HTML:', qrContainer.innerHTML);
@@ -1001,9 +1025,10 @@ function generateQR() {
             qrContainer.style.setProperty('min-height', '256px', 'important');
             qrContainer.style.setProperty('width', '100%', 'important');
             
-            const qrImg = qrContainer.querySelector('img');
-            const qrCanvas = qrContainer.querySelector('canvas');
-            const qrSvg = qrContainer.querySelector('svg');
+            // Look for QR code elements inside the qrcode div (not the logo)
+            const qrImg = qrcodeDiv.querySelector('img');
+            const qrCanvas = qrcodeDiv.querySelector('canvas');
+            const qrSvg = qrcodeDiv.querySelector('svg');
             
             console.log('After timeout - img:', qrImg, 'canvas:', qrCanvas, 'svg:', qrSvg);
             console.log('Container computed styles:', {
@@ -1019,9 +1044,9 @@ function generateQR() {
                 if (qrCanvas) qrCanvas.style.cssText = 'display: none !important;';
                 if (qrImg) qrImg.style.cssText = 'display: none !important;';
                 // Force visible styling on SVG
-                qrSvg.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 256px !important; height: 256px !important; border: none !important;';
-                qrSvg.setAttribute('width', '256');
-                qrSvg.setAttribute('height', '256');
+                qrSvg.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 100% !important; height: 100% !important; border: none !important;';
+                qrSvg.setAttribute('width', '220');
+                qrSvg.setAttribute('height', '220');
                 console.log('QR SVG should now be visible');
             } else if (qrImg) {
                 console.log('Found img element with src:', qrImg.src ? qrImg.src.substring(0, 50) + '...' : 'NO SRC');
@@ -1045,18 +1070,16 @@ function generateQR() {
                 qrImg.style.setProperty('visibility', 'visible', 'important');
                 qrImg.style.setProperty('opacity', '1', 'important');
                 qrImg.style.setProperty('margin', '0 auto', 'important');
-                qrImg.style.setProperty('width', '256px', 'important');
-                qrImg.style.setProperty('height', '256px', 'important');
+                qrImg.style.setProperty('width', '100%', 'important');
+                qrImg.style.setProperty('height', '100%', 'important');
                 qrImg.style.setProperty('border', 'none', 'important');
                 qrImg.style.setProperty('position', 'relative', 'important');
-                qrImg.style.setProperty('z-index', '9999', 'important');
+                qrImg.style.setProperty('z-index', '1', 'important');
                 qrImg.style.setProperty('max-width', '100%', 'important');
-                qrImg.style.setProperty('min-width', '256px', 'important');
-                qrImg.style.setProperty('min-height', '256px', 'important');
                 
                 // Set attributes
-                qrImg.setAttribute('width', '256');
-                qrImg.setAttribute('height', '256');
+                qrImg.setAttribute('width', '220');
+                qrImg.setAttribute('height', '220');
                 
                 // Ensure container is visible too
                 qrContainer.style.setProperty('display', 'block', 'important');
@@ -1080,7 +1103,7 @@ function generateQR() {
                     console.warn('QR img still not visible after styling, trying alternative approach');
                     qrImg.style.cssText = '';
                     qrImg.className = '';
-                    qrImg.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 256px !important; height: 256px !important; border: none !important; position: relative !important; z-index: 9999 !important; max-width: 100% !important;';
+                    qrImg.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 100% !important; height: 100% !important; border: none !important; position: relative !important; z-index: 1 !important; max-width: 100% !important;';
                 }
                 
                 // Double-check it's actually in the viewport
@@ -1096,10 +1119,10 @@ function generateQR() {
                 // If dimensions are 0, force them
                 if (rect.width === 0 || rect.height === 0) {
                     console.warn('QR img has zero dimensions, forcing size');
-                    qrImg.style.setProperty('width', '256px', 'important');
-                    qrImg.style.setProperty('height', '256px', 'important');
-                    qrImg.setAttribute('width', '256');
-                    qrImg.setAttribute('height', '256');
+                    qrImg.style.setProperty('width', '220px', 'important');
+                    qrImg.style.setProperty('height', '220px', 'important');
+                    qrImg.setAttribute('width', '220');
+                    qrImg.setAttribute('height', '220');
                 }
             } else if (qrCanvas) {
                 console.log('Found canvas element - making it visible');
@@ -1107,9 +1130,9 @@ function generateQR() {
                 if (qrImg) qrImg.style.cssText = 'display: none !important;';
                 // Remove any inline styles from canvas
                 qrCanvas.removeAttribute('style');
-                qrCanvas.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 256px !important; height: 256px !important;';
-                qrCanvas.setAttribute('width', '256');
-                qrCanvas.setAttribute('height', '256');
+                qrCanvas.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; margin: 0 auto !important; width: 100% !important; height: 100% !important;';
+                qrCanvas.setAttribute('width', '220');
+                qrCanvas.setAttribute('height', '220');
                 console.log('QR canvas should now be visible');
             } else {
                 console.error('No img, canvas, or SVG found in container');
