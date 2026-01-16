@@ -1,0 +1,27 @@
+{
+  "name": "Jenny Roscoe",
+  "role": "Director",
+  "company": "Next Level Cleaning Ltd",
+  "email": "jenny@nextlevelcleaningltd.co.uk",
+  "phone": "+447700900002",
+  "website": "https://nextlevelcleaningltd.co.uk",
+  "profileImage": "profile.jpg",
+  "contactVcf": "contact.vcf",
+  "theme": "purple",
+  "description": "Professional commercial cleaning services",
+  "social": {
+    "facebook": "https://www.facebook.com/NextLevelCleaningWirral",
+    "instagram": "https://www.instagram.com/NextLevelCleaningWirral",
+    "tiktok": "https://www.tiktok.com/@nextlevelcleaningwirral",
+    "linkedin": "https://www.linkedin.com/company/nextlevelcleaningwirral"
+  },
+  "contentStream": [
+    {
+      "type": "image",
+      "src": "https://via.placeholder.com/400x300",
+      "alt": "",
+      "title": "Our Services"
+    }
+  ]
+}
+

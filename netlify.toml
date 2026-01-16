@@ -4,6 +4,29 @@
   command = ""
   publish = "."
 
+# Redirect employee cards - handle both with and without trailing slash
+# These MUST come before the catch-all redirect to take priority
+[[redirects]]
+  from = "/id/director/lauren-moore"
+  to = "/id/director/lauren-moore/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/id/director/lauren-moore/"
+  to = "/id/director/lauren-moore/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/id/director/jenny-roscoe"
+  to = "/id/director/jenny-roscoe/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/id/director/jenny-roscoe/"
+  to = "/id/director/jenny-roscoe/index.html"
+  status = 200
+
+# Catch-all redirect for main site (must be last, won't match /id/ paths that were already matched above)
 [[redirects]]
   from = "/*"
   to = "/index.html"
