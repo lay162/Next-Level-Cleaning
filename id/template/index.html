@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title id="pageTitle">Template - Next Level Cleaning Ltd</title>
+    <!-- CRITICAL: Template page should NEVER be accessible in production -->
+    <script>
+        // Immediately redirect template page - this is for development only
+        (function() {
+            const currentHost = window.location.hostname;
+            // Only allow template on localhost - redirect everywhere else
+            if (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('localhost')) {
+                console.warn('Template page accessed in production - redirecting to main site');
+                window.location.replace('https://lay162.github.io/Next-Level-Cleaning/');
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="body">

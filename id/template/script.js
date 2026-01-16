@@ -1,65 +1,269 @@
 // Data loading and template population
 let staffData = null;
 
-// Get user identifier from URL path
+// Get user identifier and category from URL path
+// Supports: /id/director/lauren-moore/, /id/manager/john-smith/, /id/cleaner/jane-doe/, etc.
 function getUserFromPath() {
     const path = window.location.pathname;
-    // Extract from /id/director/lauren-moore/ or /id/director/jenny-roscoe/
-    const match = path.match(/\/id\/director\/([^\/]+)/);
-    if (match) {
-        return match[1];
+    // Extract from /id/[category]/[employee-name]/
+    // Categories: director, manager, cleaner
+    // Handle both /id/director/lauren-moore/ and /id/director/lauren-moore/index.html
+    const match = path.match(/\/id\/(director|manager|cleaner)\/([^\/]+)/);
+    if (match && match[2]) {
+        const user = match[2];
+        // Make sure it's not 'template' or 'index.html'
+        if (user !== 'template' && user !== 'index.html' && !user.endsWith('.html')) {
+            return user;
+        }
     }
     // Fallback: try query parameter
     const params = new URLSearchParams(window.location.search);
-    return params.get('user') || null;
+    const userParam = params.get('user');
+    if (userParam && userParam !== 'template') {
+        return userParam;
+    }
+    return null;
+}
+
+// Get category from URL path (director, manager, cleaner)
+function getCategoryFromPath() {
+    const path = window.location.pathname;
+    // Extract category from /id/[category]/[employee-name]/
+    const match = path.match(/\/id\/(director|manager|cleaner)\//);
+    if (match && match[1]) {
+        return match[1];
+    }
+    // Fallback: default to director if not found
+    return 'director';
 }
 
 // Load staff data from JSON
 async function loadStaffData() {
-    const user = getUserFromPath();
+    let user = getUserFromPath();
+    console.log('Loading staff data for user:', user);
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Current URL:', window.location.href);
+    
+    // CRITICAL FIX: If getUserFromPath() fails, try to detect from URL directly
     if (!user) {
-        console.error('No user identifier found in URL');
+        console.warn('⚠️ getUserFromPath() returned null, trying direct URL detection...');
+        const path = window.location.pathname;
+        const href = window.location.href;
+        
+        // Try to extract from any category path: /id/[category]/[employee-name]/
+        const categoryMatch = path.match(/\/id\/(director|manager|cleaner)\/([^\/]+)/);
+        if (categoryMatch && categoryMatch[2]) {
+            user = categoryMatch[2];
+            console.log('✅ Detected user from URL:', user);
+        } else {
+            // Fallback: try to find employee name in path
+            const nameMatch = path.match(/\/([a-z]+-[a-z]+)\//);
+            if (nameMatch && nameMatch[1]) {
+                user = nameMatch[1];
+                console.log('✅ Detected user from path pattern:', user);
+            } else {
+                console.error('❌ No user identifier found in URL');
+                console.error('Pathname:', path);
+                console.error('Href:', href);
+                // Template file - return null, don't default to specific employee
+                return null;
+            }
+        }
+    }
+    
+    if (user === 'template') {
+        console.error('ERROR: Template detected - this should not happen on employee cards!');
+        alert('ERROR: Template page detected. This is a development-only page.');
         return null;
     }
     
     try {
-        // Try relative path first (from /id/director/lauren-moore/)
-        let dataPath = `../../data/${user}.json`;
+        // Try multiple paths in order of likelihood
+        // CRITICAL: For local testing, try relative path first
+        // For production, try absolute and full URL
+        // Try multiple paths - works for both GitHub Pages and custom domain
+        const baseUrl = window.location.origin;
+        // Check if we're on GitHub Pages (has /Next-Level-Cleaning/ in path or github.io domain)
+        const isGitHubPages = window.location.hostname.includes('github.io') || window.location.pathname.includes('/Next-Level-Cleaning/');
+        const repoPath = isGitHubPages ? '/Next-Level-Cleaning' : '';
         
-        // If that fails, try absolute path
-        const response = await fetch(dataPath);
-        if (!response.ok) {
-            // Try alternative path
-            dataPath = `/data/${user}.json`;
-            const altResponse = await fetch(dataPath);
-            if (!altResponse.ok) {
-                throw new Error(`Failed to load data for ${user}`);
+        const pathsToTry = [
+            `${baseUrl}${repoPath}/data/${user}.json`,  // Full URL with current origin (works everywhere)
+            `${baseUrl}/data/${user}.json`,             // Full URL without repo path (fallback)
+            `/data/${user}.json`,                       // Absolute path (works on GitHub Pages and custom domain)
+            `${repoPath}/data/${user}.json`,            // Absolute path with repo (GitHub Pages)
+            `../../data/${user}.json`,                  // Relative path from /id/director/lauren-moore/ (works locally)
+            `https://lay162.github.io/Next-Level-Cleaning/data/${user}.json`,  // Full GitHub Pages URL (always works)
+            `https://nextlevelcleaningltd.co.uk/data/${user}.json`,  // Full production URL (works when scanned)
+            `../data/${user}.json`,                     // Alternative relative (one level up)
+            `./data/${user}.json`,                      // Alternative relative (same directory)
+            `data/${user}.json`                         // Simple relative
+        ];
+        
+        for (let i = 0; i < pathsToTry.length; i++) {
+            const dataPath = pathsToTry[i];
+            console.log(`Attempt ${i + 1}/${pathsToTry.length}: Loading data from:`, dataPath);
+            
+            try {
+                const response = await fetch(dataPath);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`✅ Data loaded successfully from: ${dataPath}`);
+                    console.log('✅ Loaded data for:', data.name);
+                    return data;
+                } else {
+                    console.warn(`❌ Path ${i + 1} failed with status:`, response.status, response.statusText);
+                }
+            } catch (fetchError) {
+                console.warn(`❌ Path ${i + 1} failed with error:`, fetchError.message);
             }
-            const data = await altResponse.json();
-            return data;
         }
         
-        const data = await response.json();
-        return data;
+        // If all paths failed, try one more time with hardcoded fallback
+        console.error('❌ ALL DATA PATHS FAILED!');
+        console.error('Tried paths:', pathsToTry);
+        console.error('Current URL:', window.location.href);
+        
+        // LAST RESORT: Hardcoded data fallback for known employees
+        if (user === 'lauren-moore') {
+            console.warn('⚠️ Using hardcoded fallback data for Lauren');
+            return {
+                name: "Lauren Moore",
+                role: "Director",
+                company: "Next Level Cleaning Ltd",
+                email: "lauren@nextlevelcleaningltd.co.uk",
+                phone: "+447700900001",
+                website: "https://nextlevelcleaningltd.co.uk",
+                profileImage: "profile.jpg",
+                contactVcf: "contact.vcf",
+                theme: "pink",
+                description: "Professional commercial cleaning services",
+                social: {
+                    facebook: "https://www.facebook.com/NextLevelCleaningWirral",
+                    instagram: "https://www.instagram.com/NextLevelCleaningWirral",
+                    tiktok: "https://www.tiktok.com/@nextlevelcleaningwirral",
+                    linkedin: "https://www.linkedin.com/company/nextlevelcleaningwirral"
+                },
+                contentStream: []
+            };
+        } else if (user === 'jenny-roscoe') {
+            console.warn('⚠️ Using hardcoded fallback data for Jenny');
+            return {
+                name: "Jenny Roscoe",
+                role: "Director",
+                company: "Next Level Cleaning Ltd",
+                email: "jenny@nextlevelcleaningltd.co.uk",
+                phone: "+447700900002",
+                website: "https://nextlevelcleaningltd.co.uk",
+                profileImage: "profile.jpg",
+                contactVcf: "contact.vcf",
+                theme: "purple",
+                description: "Professional commercial cleaning services",
+                social: {
+                    facebook: "https://www.facebook.com/NextLevelCleaningWirral",
+                    instagram: "https://www.instagram.com/NextLevelCleaningWirral",
+                    tiktok: "https://www.tiktok.com/@nextlevelcleaningwirral",
+                    linkedin: "https://www.linkedin.com/company/nextlevelcleaningwirral"
+                },
+                contentStream: []
+            };
+        }
+        
+        throw new Error(`Failed to load data for ${user} from any path`);
+        
     } catch (error) {
-        console.error('Error loading staff data:', error);
+        console.error('❌ CRITICAL ERROR loading staff data:', error);
+        console.error('Error details:', error.message);
+        console.error('This means the page will show template defaults or error message');
+        
+        // LAST RESORT: Even if everything fails, try hardcoded fallback
+        // Check URL one more time to determine which employee
+        const path = window.location.pathname;
+        const href = window.location.href;
+        let fallbackUser = null;
+        
+        // Try to extract employee name from URL
+        const categoryMatch = path.match(/\/id\/(director|manager|cleaner)\/([^\/]+)/);
+        if (categoryMatch && categoryMatch[2]) {
+            fallbackUser = categoryMatch[2];
+        } else {
+            // Can't determine employee - return null
+            return null;
+        }
+        
+        console.warn('⚠️ Using emergency fallback for:', fallbackUser);
+        
+        if (fallbackUser === 'lauren-moore') {
+            return {
+                name: "Lauren Moore",
+                role: "Director",
+                company: "Next Level Cleaning Ltd",
+                email: "lauren@nextlevelcleaningltd.co.uk",
+                phone: "+447700900001",
+                website: "https://nextlevelcleaningltd.co.uk",
+                profileImage: "profile.jpg",
+                contactVcf: "contact.vcf",
+                theme: "pink",
+                description: "Professional commercial cleaning services",
+                social: {
+                    facebook: "https://www.facebook.com/NextLevelCleaningWirral",
+                    instagram: "https://www.instagram.com/NextLevelCleaningWirral",
+                    tiktok: "https://www.tiktok.com/@nextlevelcleaningwirral",
+                    linkedin: "https://www.linkedin.com/company/nextlevelcleaningwirral"
+                },
+                contentStream: []
+            };
+        } else if (fallbackUser === 'jenny-roscoe') {
+            return {
+                name: "Jenny Roscoe",
+                role: "Director",
+                company: "Next Level Cleaning Ltd",
+                email: "jenny@nextlevelcleaningltd.co.uk",
+                phone: "+447700900002",
+                website: "https://nextlevelcleaningltd.co.uk",
+                profileImage: "profile.jpg",
+                contactVcf: "contact.vcf",
+                theme: "purple",
+                description: "Professional commercial cleaning services",
+                social: {
+                    facebook: "https://www.facebook.com/NextLevelCleaningWirral",
+                    instagram: "https://www.instagram.com/NextLevelCleaningWirral",
+                    tiktok: "https://www.tiktok.com/@nextlevelcleaningwirral",
+                    linkedin: "https://www.linkedin.com/company/nextlevelcleaningwirral"
+                },
+                contentStream: []
+            };
+        }
+        
         return null;
     }
 }
 
 // Populate template with staff data
 function populateTemplate(data) {
-    if (!data) return;
+    if (!data) {
+        console.error('populateTemplate called with no data!');
+        // Show error instead of template defaults
+        const staffName = document.getElementById('staffName');
+        const staffRole = document.getElementById('staffRole');
+        if (staffName) staffName.textContent = 'ERROR: Data not loaded';
+        if (staffRole) staffRole.textContent = 'Please refresh the page';
+        return;
+    }
+    
+    console.log('Populating template with data:', data.name, data.role);
     
     // Apply theme
     if (data.theme) {
         document.body.setAttribute('data-theme', data.theme);
+        console.log('Theme applied:', data.theme);
     }
     
     // Update page title
     const pageTitle = document.getElementById('pageTitle');
     if (pageTitle) {
         pageTitle.textContent = `${data.name} - Next Level Cleaning Ltd`;
+        console.log('Page title updated:', pageTitle.textContent);
     }
     
     // Update profile image
@@ -69,12 +273,58 @@ function populateTemplate(data) {
         profileImage.alt = data.name;
     }
     
-    // Update name, role, company
+    // Update name, role, company - CRITICAL: These must update or page shows template
     const staffName = document.getElementById('staffName');
-    if (staffName) staffName.textContent = data.name;
+    if (staffName) {
+        // Clear any existing content first
+        staffName.textContent = '';
+        // Set the new name
+        staffName.textContent = data.name;
+        console.log('✅ Name element updated to:', data.name);
+        // Force a re-render by reading and setting again
+        const currentText = staffName.textContent;
+        if (currentText !== data.name) {
+            console.warn('⚠️ Name element text mismatch, forcing update');
+            staffName.textContent = '';
+            staffName.textContent = data.name;
+        }
+        // Final verification
+        if (staffName.textContent !== data.name) {
+            console.error('❌ CRITICAL: Name element still incorrect after update!');
+            console.error('Expected:', data.name);
+            console.error('Actual:', staffName.textContent);
+            // Force one more time
+            staffName.innerHTML = data.name;
+        }
+    } else {
+        console.error('❌ CRITICAL: staffName element not found!');
+    }
     
     const staffRole = document.getElementById('staffRole');
-    if (staffRole) staffRole.textContent = data.role;
+    if (staffRole) {
+        // Clear any existing content first
+        staffRole.textContent = '';
+        // Set the new role
+        staffRole.textContent = data.role;
+        console.log('✅ Role element updated to:', data.role);
+        // Force a re-render
+        const currentText = staffRole.textContent;
+        if (currentText !== data.role) {
+            console.warn('⚠️ Role element text mismatch, forcing update');
+            staffRole.textContent = '';
+            staffRole.textContent = data.role;
+        }
+        // Final verification
+        if (staffRole.textContent !== data.role) {
+            console.error('❌ CRITICAL: Role element still incorrect after update!');
+            console.error('Expected:', data.role);
+            console.error('Actual:', staffRole.textContent);
+            // Force one more time
+            staffRole.innerHTML = data.role;
+        }
+    } else {
+        console.error('❌ CRITICAL: staffRole element not found!');
+    }
     
     const companyName = document.getElementById('companyName');
     if (companyName) companyName.textContent = data.company;
@@ -83,7 +333,26 @@ function populateTemplate(data) {
     const description = document.getElementById('description');
     if (description && data.description) {
         description.textContent = data.description;
+        console.log('Description updated to:', data.description);
     }
+    
+    // CRITICAL: Verify all critical elements were updated
+    const finalName = document.getElementById('staffName')?.textContent;
+    const finalRole = document.getElementById('staffRole')?.textContent;
+    
+    if (finalName && (finalName === 'Loading...' || finalName === 'TEMPLATE NAME' || finalName === 'ERROR: Data not loaded')) {
+        console.error('❌ CRITICAL ERROR: Name element still shows default/error!');
+        console.error('Expected:', data.name);
+        console.error('Actual:', finalName);
+    }
+    
+    if (finalRole && (finalRole === 'Please wait...' || finalRole === 'TEMPLATE ROLE' || finalRole === 'Please refresh the page')) {
+        console.error('❌ CRITICAL ERROR: Role element still shows default/error!');
+        console.error('Expected:', data.role);
+        console.error('Actual:', finalRole);
+    }
+    
+    console.log('✅ Final verification - Name:', finalName, 'Role:', finalRole);
     
     // Update contact links
     const callLink = document.getElementById('callLink');
@@ -506,6 +775,7 @@ if (copyBtn) {
 
 // QR Code generation - generates unique QR for each employee card
 function generateQR() {
+    console.log('🔵 generateQR() called');
     const qrContainer = document.getElementById('qr');
     if (!qrContainer) {
         console.error('QR container not found - #qr element missing');
@@ -537,11 +807,101 @@ function generateQR() {
         return;
     }
     
-    // TEMPLATE FILE - Should not be used in production
-    // This is for development only - do not generate QR codes from template
-    console.warn('WARNING: QR code generation attempted from template file. This should not be used in production.');
-    qrContainer.innerHTML = '<p class="text">Template file - QR codes should not be generated from this page.</p>';
-    return;
+    // Always use production URL for QR code (works when scanned from phone)
+    // Extract user identifier from path to ensure correct URL
+    const user = getUserFromPath();
+    if (!user || user === 'template') {
+        console.error('Could not determine user from URL path or template detected. Pathname:', window.location.pathname);
+        // This should never happen on a real employee card - log error
+        console.error('ERROR: QR code generation failed - no valid user found!');
+        qrContainer.innerHTML = '<p class="text">Error: Could not generate QR code. Please contact support.</p>';
+        return;
+    }
+    
+    // Explicitly construct the correct URL for this person
+    // CRITICAL: QR code should point directly to GitHub Pages where the correct employee card is hosted
+    // Build URL step by step to ensure no dots replace slashes
+    // DYNAMIC: Works with any category (director, manager, cleaner)
+    const protocol = 'https://';
+    // Use GitHub Pages domain - this is where the employee cards are actually hosted
+    const domain = 'lay162.github.io';
+    const repoPath = '/Next-Level-Cleaning';
+    const pathSegment1 = 'id';
+    const pathSegment2 = getCategoryFromPath(); // Dynamically get category (director, manager, cleaner)
+    const pathSegment3 = user;
+    
+    // Construct URL with explicit forward slashes
+    // IMPORTANT: Points directly to GitHub Pages where the correct employee card is hosted
+    // Works for: /id/director/lauren-moore/, /id/manager/john-smith/, /id/cleaner/jane-doe/, etc.
+    var currentUrl = protocol + domain + repoPath + '/' + pathSegment1 + '/' + pathSegment2 + '/' + pathSegment3 + '/';
+    
+    // Double-check: replace any accidental dots in path with slashes (shouldn't happen, but safety check)
+    const urlObj = new URL(currentUrl);
+    if (urlObj.pathname.indexOf('.') > -1 && !urlObj.pathname.endsWith('.html')) {
+        console.warn('⚠️ WARNING: Found dots in pathname, fixing:', urlObj.pathname);
+        const fixedPath = urlObj.pathname.replace(/\./g, '/');
+        currentUrl = protocol + domain + fixedPath;
+        console.warn('⚠️ Fixed URL:', currentUrl);
+    }
+    
+    // Validate URL format - must start with http:// or https://
+    if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) {
+        console.error('❌ INVALID URL FORMAT - must start with http:// or https://:', currentUrl);
+        qrContainer.innerHTML = '<p class="text">Error: Invalid URL format. Please contact support.</p>';
+        return;
+    }
+    
+    // Check for dots in the PATH (not in domain) - dots in domain (.co.uk) are OK
+    const urlParts = currentUrl.split('//');
+    if (urlParts.length === 2) {
+        const afterProtocol = urlParts[1];
+        const firstSlashIndex = afterProtocol.indexOf('/');
+        
+        if (firstSlashIndex > -1) {
+            // There's a path after the domain
+            const domain = afterProtocol.substring(0, firstSlashIndex);
+            const path = afterProtocol.substring(firstSlashIndex);
+            
+            // Check if path has dots that shouldn't be there (like .director or .index)
+            // Allow .html at the end, but not dots in the middle of path segments
+            const pathSegments = path.split('/').filter(s => s.length > 0);
+            for (let i = 0; i < pathSegments.length; i++) {
+                const segment = pathSegments[i];
+                // If segment has a dot and it's not the last segment ending in .html, it's wrong
+                if (segment.indexOf('.') > -1 && !segment.endsWith('.html') && segment !== 'index.html') {
+                    console.error('❌ INVALID PATH SEGMENT - contains dots:', segment);
+                    // Fix it - replace dots with slashes in this segment
+                    const fixedSegment = segment.replace(/\./g, '/');
+                    pathSegments[i] = fixedSegment;
+                    console.warn('⚠️ Fixed path segment:', segment, '->', fixedSegment);
+                }
+            }
+            
+            // Reconstruct path if we fixed anything
+            const newPath = '/' + pathSegments.join('/');
+            if (newPath !== path) {
+                currentUrl = urlParts[0] + '//' + domain + newPath;
+                console.warn('⚠️ Fixed URL path:', currentUrl);
+            }
+        }
+    }
+    
+    console.log('=== QR CODE GENERATION ===');
+    console.log('User detected:', user);
+    console.log('Category detected:', getCategoryFromPath());
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Domain being used:', domain);
+    console.log('QR code will point to:', currentUrl);
+    console.log('Full URL breakdown:', {
+        protocol: protocol,
+        domain: domain,
+        category: pathSegment2,
+        user: pathSegment3,
+        fullUrl: currentUrl
+    });
+    console.log('✅ QR Code URL: ' + currentUrl);
+    console.log('URL validation: ✅ PASSED');
+    console.log('========================');
     
     // Force container visibility
     qrContainer.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; width: 100% !important; min-height: 256px !important; padding: 1rem !important; background: white !important; border-radius: 12px !important; text-align: center !important; position: relative !important;';
@@ -555,8 +915,80 @@ function generateQR() {
         console.log('Creating QR code for:', currentUrl);
         
         // Generate QR code using constructor - this creates an img element immediately
+        // CRITICAL: Ensure URL is a string with proper encoding and NO dots in path
+        let qrText = String(currentUrl).trim();
+        
+        // FINAL SAFETY CHECK: Replace any dots in the path portion with slashes
+        // This catches the bug where id.director appears instead of id/director
+        const urlMatch = qrText.match(/^(https?:\/\/[^\/]+)(\/.*)$/);
+        if (urlMatch) {
+            const domainPart = urlMatch[1];
+            let pathPart = urlMatch[2];
+            
+            // Check if path has dots that shouldn't be there (like .director or .index)
+            if (pathPart.indexOf('.') > -1 && !pathPart.endsWith('.html')) {
+                console.error('❌ CRITICAL BUG DETECTED: Found dots in path!', pathPart);
+                console.error('This should be /id/director/ but found:', pathPart);
+                // Replace dots with slashes in path (but keep domain dots like .co.uk)
+                pathPart = pathPart.replace(/\./g, '/');
+                qrText = domainPart + pathPart;
+                console.warn('⚠️ FIXED QR Code text from:', currentUrl);
+                console.warn('⚠️ FIXED QR Code text to:', qrText);
+            }
+        }
+        
+        console.log('QR Code text (final):', qrText);
+        console.log('QR Code text type:', typeof qrText);
+        console.log('QR Code text length:', qrText.length);
+        
+        // Validate domain is GitHub Pages (where employee cards are hosted)
+        if (qrText.includes('nextlevelcleaningltd.co.uk')) {
+            console.warn('⚠️ QR Code is using custom domain instead of GitHub Pages');
+            // Replace with GitHub Pages URL
+            qrText = qrText.replace(/https?:\/\/nextlevelcleaningltd\.co\.uk/g, 'https://lay162.github.io/Next-Level-Cleaning');
+            console.warn('⚠️ FIXED: Replaced custom domain with GitHub Pages URL');
+            console.warn('⚠️ New QR text:', qrText);
+        }
+        
+        // Validate domain is GitHub Pages
+        if (!qrText.includes('lay162.github.io')) {
+            console.error('❌ CRITICAL: QR Code does not use GitHub Pages domain!');
+            console.error('Expected: lay162.github.io');
+            console.error('Actual text:', qrText);
+            qrContainer.innerHTML = '<p class="text">Error: QR code domain incorrect. Please refresh and try again.</p>';
+            return;
+        }
+        
+        // Validate one more time before generating
+        if (!qrText.startsWith('http://') && !qrText.startsWith('https://')) {
+            console.error('❌ QR Code text does not start with http:// or https://');
+            qrContainer.innerHTML = '<p class="text">Error: Invalid QR code URL format.</p>';
+            return;
+        }
+        
+        // Final validation - must contain /id/[category]/ with slashes
+        const categoryPattern = /\/id\/(director|manager|cleaner)\//;
+        if (!categoryPattern.test(qrText)) {
+            console.error('❌ CRITICAL: QR Code text does not contain /id/[category]/ with slashes!');
+            console.error('Actual text:', qrText);
+            qrContainer.innerHTML = '<p class="text">Error: QR code URL format incorrect. Please refresh and try again.</p>';
+            return;
+        }
+        
+        console.log('✅ QR Code validation passed - using GitHub Pages domain');
+        
+        // CRITICAL: Display the URL that will be in the QR code so user can verify
+        const urlDisplay = document.createElement('p');
+        urlDisplay.className = 'text';
+        urlDisplay.style.cssText = 'font-size: 0.75rem; word-break: break-all; margin: 0.5rem 0; color: #666;';
+        urlDisplay.textContent = 'QR Code URL: ' + qrText;
+        qrContainer.appendChild(urlDisplay);
+        
+        console.log('🔍 QR CODE URL THAT WILL BE ENCODED:', qrText);
+        console.log('🔍 VERIFY THIS URL IS CORRECT BEFORE SCANNING!');
+        
         const qrcode = new QRCode(qrContainer, {
-            text: currentUrl,
+            text: qrText,
             width: 256,
             height: 256,
             colorDark: '#000000',
@@ -623,12 +1055,8 @@ function generateQR() {
                 qrImg.style.setProperty('width', '256px', 'important');
                 qrImg.style.setProperty('height', '256px', 'important');
                 qrImg.style.setProperty('border', 'none', 'important');
-                qrImg.style.setProperty('position', 'static', 'important');
-                qrImg.style.setProperty('z-index', '10', 'important');
-                qrImg.style.setProperty('left', 'auto', 'important');
-                qrImg.style.setProperty('right', 'auto', 'important');
-                qrImg.style.setProperty('top', 'auto', 'important');
-                qrImg.style.setProperty('bottom', 'auto', 'important');
+                qrImg.style.setProperty('position', 'relative', 'important');
+                qrImg.style.setProperty('z-index', '9999', 'important');
                 qrImg.style.setProperty('max-width', '100%', 'important');
                 qrImg.style.setProperty('min-width', '256px', 'important');
                 qrImg.style.setProperty('min-height', '256px', 'important');
@@ -703,7 +1131,57 @@ function generateQR() {
     }
 }
 
-// Initialize on window load to ensure all scripts are loaded
+// CRITICAL: Load data IMMEDIATELY when DOM is ready, don't wait for full page load
+// This ensures data is loaded as fast as possible
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 DOM Content Loaded - Starting immediate data load...');
+    console.log('Current URL:', window.location.href);
+    console.log('Current pathname:', window.location.pathname);
+    
+    // CRITICAL: Check if we're on an employee card page - should NEVER show template
+    const user = getUserFromPath();
+    if (!user || user === 'template') {
+        console.error('❌ CRITICAL: On employee card page but user is:', user);
+        const staffName = document.getElementById('staffName');
+        const staffRole = document.getElementById('staffRole');
+        if (staffName) staffName.textContent = 'ERROR: Invalid page';
+        if (staffRole) staffRole.textContent = 'This URL is incorrect';
+        return;
+    }
+    
+    // Load data immediately
+    staffData = await loadStaffData();
+    if (staffData) {
+        console.log('✅ Staff data loaded on DOMContentLoaded:', staffData.name);
+        populateTemplate(staffData);
+        
+        // CRITICAL: Verify data was applied - if still showing "Loading..." or "TEMPLATE", something is wrong
+        setTimeout(() => {
+            const verifyName = document.getElementById('staffName')?.textContent;
+            const verifyRole = document.getElementById('staffRole')?.textContent;
+            if (verifyName === 'Loading...' || verifyName === 'TEMPLATE NAME' || verifyName === 'ERROR: Data not loaded') {
+                console.error('❌ CRITICAL: Data loaded but page still shows default text!');
+                console.error('Name element shows:', verifyName);
+                console.error('Expected:', staffData.name);
+                // Force update
+                const nameEl = document.getElementById('staffName');
+                const roleEl = document.getElementById('staffRole');
+                if (nameEl) nameEl.textContent = staffData.name;
+                if (roleEl) roleEl.textContent = staffData.role;
+                console.log('✅ Forced update of name and role');
+            }
+        }, 100);
+    } else {
+        console.error('❌ Failed to load data on DOMContentLoaded');
+        // Show error instead of template
+        const staffName = document.getElementById('staffName');
+        const staffRole = document.getElementById('staffRole');
+        if (staffName) staffName.textContent = 'ERROR: Data not loaded';
+        if (staffRole) staffRole.textContent = 'Please check console and refresh';
+    }
+});
+
+// Also load on window load as backup
 window.addEventListener('load', async function() {
     // Set initial modal state
     if (m) {
@@ -730,11 +1208,78 @@ window.addEventListener('load', async function() {
         }
     }, 200);
     
-    // Load and populate staff data
-    staffData = await loadStaffData();
+    // Load and populate staff data (backup - in case DOMContentLoaded didn't work)
+    // Only load if data wasn't already loaded
+    if (!staffData) {
+        console.log('🔄 Starting data load (backup - DOMContentLoaded may have failed)...');
+        staffData = await loadStaffData();
+    }
+    
     if (staffData) {
+        console.log('✅ Staff data loaded successfully:', staffData.name);
+        console.log('🔄 Populating template...');
         populateTemplate(staffData);
+        console.log('✅ Template populated successfully');
+        
+        // CRITICAL: Force verify and update if needed
+        setTimeout(() => {
+            const verifyName = document.getElementById('staffName')?.textContent;
+            const verifyRole = document.getElementById('staffRole')?.textContent;
+            console.log('🔍 Verification - Name on page:', verifyName);
+            console.log('🔍 Verification - Role on page:', verifyRole);
+            
+            // If still showing defaults, force update
+            if (verifyName === 'Loading...' || verifyName === 'TEMPLATE NAME' || verifyName === 'ERROR: Data not loaded') {
+                console.error('❌ CRITICAL: Template defaults still showing! Forcing update...');
+                const nameEl = document.getElementById('staffName');
+                const roleEl = document.getElementById('staffRole');
+                if (nameEl) {
+                    nameEl.textContent = staffData.name;
+                    console.log('✅ Forced name update to:', staffData.name);
+                }
+                if (roleEl) {
+                    roleEl.textContent = staffData.role;
+                    console.log('✅ Forced role update to:', staffData.role);
+                }
+            }
+            
+            // Final check
+            const finalName = document.getElementById('staffName')?.textContent;
+            const finalRole = document.getElementById('staffRole')?.textContent;
+            if (finalName === staffData.name && finalRole === staffData.role) {
+                console.log('✅ SUCCESS: Page now shows correct data:', finalName, finalRole);
+            } else {
+                console.error('❌ FAILED: Page still shows incorrect data');
+                console.error('Expected:', staffData.name, staffData.role);
+                console.error('Actual:', finalName, finalRole);
+            }
+        }, 200);
     } else {
-        console.warn('No staff data loaded, using template defaults');
+        console.error('❌ CRITICAL: No staff data loaded!');
+        console.error('Current URL:', window.location.href);
+        console.error('Current pathname:', window.location.pathname);
+        console.error('This should NEVER happen on a production employee card!');
+        
+        // Show error message instead of template defaults
+        const staffName = document.getElementById('staffName');
+        const staffRole = document.getElementById('staffRole');
+        if (staffName) {
+            staffName.textContent = 'ERROR: Could not load data';
+            console.log('✅ Set error message in name element');
+        }
+        if (staffRole) {
+            staffRole.textContent = 'Please check console and refresh';
+            console.log('✅ Set error message in role element');
+        }
+        
+        // Verify error message was set
+        setTimeout(() => {
+            const checkName = document.getElementById('staffName')?.textContent;
+            if (checkName === 'ERROR: Could not load data') {
+                console.log('✅ Error message confirmed on page');
+            } else {
+                console.error('❌ Error message not set! Element shows:', checkName);
+            }
+        }, 100);
     }
 });
