@@ -1,42 +1,63 @@
 # Deployment Notes - Custom Domain Setup
 
-## Important: DNS Configuration Required
+## ✅ CNAME File Created
+
+A `CNAME` file has been created in the repository root. This tells GitHub Pages to use your custom domain.
+
+## Important: DNS Configuration Required (One-Time Setup)
 
 To use the custom domain (`nextlevelcleaningltd.co.uk`) in QR codes without showing the old cached template, you **MUST** configure your DNS to point to GitHub Pages.
 
+**This is a ONE-TIME change that won't break anything** - it just tells your domain to point to GitHub Pages instead of Netlify.
+
 ### Current Issue
 - QR codes use custom domain: `https://nextlevelcleaningltd.co.uk/id/director/lauren-moore/`
-- If DNS still points to Netlify → Shows old cached template
+- If DNS still points to Netlify → Shows old cached template ❌
 - If DNS points to GitHub Pages → Shows latest version ✅
 
-### Solution: Point DNS to GitHub Pages
+### Step-by-Step Solution
 
+#### Step 1: Configure GitHub Pages Custom Domain
+1. Go to your GitHub repository: `https://github.com/lay162/Next-Level-Cleaning`
+2. Click **Settings** → **Pages** (left sidebar)
+3. Under **"Custom domain"**, enter: `nextlevelcleaningltd.co.uk`
+4. Click **Save**
+5. Check **"Enforce HTTPS"** (if available)
+6. Wait 5-10 minutes for GitHub to verify the domain
+
+#### Step 2: Update DNS at Your Domain Registrar
 1. **Go to your domain registrar** (where you bought `nextlevelcleaningltd.co.uk`)
+   - This might be Netlify, GoDaddy, Namecheap, or another registrar
 
-2. **Update DNS records:**
-   - **Option A: CNAME Record (Recommended)**
+2. **Find DNS Management / DNS Settings**
+
+3. **Update DNS records:**
+   - **Option A: CNAME Record (Recommended - Easiest)**
      - Type: `CNAME`
-     - Name: `@` (or leave blank for root domain)
-     - Value: `lay162.github.io`
+     - Name/Host: `@` (or leave blank for root domain)
+     - Value/Target: `lay162.github.io`
+     - TTL: `3600` (or default)
    
-   - **Option B: A Records**
+   - **Option B: A Records** (If CNAME not supported)
      - Type: `A`
-     - Name: `@`
-     - Value: GitHub Pages IP addresses:
-       - `185.199.108.153`
+     - Name/Host: `@`
+     - Value: `185.199.108.153`
+     - Add 3 more A records with:
        - `185.199.109.153`
        - `185.199.110.153`
        - `185.199.111.153`
 
-3. **Configure GitHub Pages Custom Domain:**
-   - Go to your GitHub repository
-   - Settings → Pages
-   - Under "Custom domain", enter: `nextlevelcleaningltd.co.uk`
-   - Check "Enforce HTTPS"
+4. **Save the DNS changes**
 
-4. **Wait for DNS propagation:**
-   - Can take 24-48 hours
-   - Check with: `nslookup nextlevelcleaningltd.co.uk`
+#### Step 3: Wait for DNS Propagation
+- Can take 5 minutes to 24 hours (usually 1-2 hours)
+- GitHub will show a green checkmark when DNS is configured correctly
+- Check status: Go to GitHub → Settings → Pages → Custom domain
+
+#### Step 4: Verify It's Working
+1. Visit: `https://nextlevelcleaningltd.co.uk/id/director/lauren-moore/`
+2. Should show Lauren's card (not template)
+3. Scan QR code - should show company domain with correct employee card
 
 ### After DNS is Configured
 
