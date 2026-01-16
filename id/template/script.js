@@ -138,7 +138,7 @@ async function loadStaffData() {
                 contactVcf: "contact.vcf",
                 qrImage: "/assets/qr-codes/Laurens-QR-code-.png",
                 theme: "pink",
-                description: "Professional commercial cleaning services",
+                description: "Professional Commercial Cleaning Services",
                 social: {
                     facebook: "https://www.facebook.com/NextLevelCleaningWirral",
                     instagram: "https://www.instagram.com/NextLevelCleaningWirral",
@@ -160,7 +160,7 @@ async function loadStaffData() {
                 contactVcf: "contact.vcf",
                 qrImage: "/assets/qr-codes/Jenny's Qr-code.png",
                 theme: "purple",
-                description: "Professional commercial cleaning services",
+                description: "Professional Commercial Cleaning Services",
                 social: {
                     facebook: "https://www.facebook.com/NextLevelCleaningWirral",
                     instagram: "https://www.instagram.com/NextLevelCleaningWirral",
@@ -207,7 +207,7 @@ async function loadStaffData() {
                 contactVcf: "contact.vcf",
                 qrImage: "/assets/qr-codes/Laurens-QR-code-.png",
                 theme: "pink",
-                description: "Professional commercial cleaning services",
+                description: "Professional Commercial Cleaning Services",
                 social: {
                     facebook: "https://www.facebook.com/NextLevelCleaningWirral",
                     instagram: "https://www.instagram.com/NextLevelCleaningWirral",
@@ -228,7 +228,7 @@ async function loadStaffData() {
                 contactVcf: "contact.vcf",
                 qrImage: "/assets/qr-codes/Jenny's Qr-code.png",
                 theme: "purple",
-                description: "Professional commercial cleaning services",
+                description: "Professional Commercial Cleaning Services",
                 social: {
                     facebook: "https://www.facebook.com/NextLevelCleaningWirral",
                     instagram: "https://www.instagram.com/NextLevelCleaningWirral",
