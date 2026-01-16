@@ -275,6 +275,12 @@ function populateTemplate(data) {
     if (profileImage && data.profileImage) {
         profileImage.src = data.profileImage;
         profileImage.alt = data.name;
+        // Fallback to placeholder if image fails to load
+        profileImage.onerror = function() {
+            console.warn('Profile image failed to load:', data.profileImage);
+            this.src = 'profile.jpg'; // Fallback to default placeholder
+            this.onerror = null; // Prevent infinite loop
+        };
     }
     
     // Update name, role, company - CRITICAL: These must update or page shows template
@@ -710,7 +716,7 @@ if (sqr) {
     });
 }
 
-// Share functionality
+// Share functionality - uses native share API, never opens QR modal
 async function handleShare() {
     // Get current URL - ensure it's the full URL
     const currentUrl = window.location.href;
@@ -733,18 +739,68 @@ async function handleShare() {
                 await navigator.share(shareData);
             }
         } else {
-            // Fallback to modal with copy URL
-            showModal('share');
+            // Fallback: Copy URL to clipboard and show toast
+            await copyToClipboard(currentUrl);
+            showToast('Link copied');
         }
     } catch (error) {
         // User cancelled or error occurred
         if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
             console.error('Share error:', error);
-            // Fallback to modal
-            showModal('share');
+            // Fallback: Copy URL to clipboard and show toast
+            try {
+                await copyToClipboard(currentUrl);
+                showToast('Link copied');
+            } catch (copyError) {
+                console.error('Copy failed:', copyError);
+            }
         }
         // If AbortError or NotAllowedError, user cancelled - do nothing
     }
+}
+
+// Copy to clipboard helper
+async function copyToClipboard(text) {
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Show toast notification
+function showToast(message) {
+    // Remove existing toast if any
+    const existingToast = document.getElementById('shareToast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.id = 'shareToast';
+    toast.textContent = message;
+    toast.style.cssText = 'position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; z-index: 10000; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);';
+    document.body.appendChild(toast);
+    
+    // Remove toast after 2 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 2000);
 }
 
 // Copy URL functionality
